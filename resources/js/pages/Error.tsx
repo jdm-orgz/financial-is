@@ -1,6 +1,6 @@
 import { Head, Link } from '@inertiajs/react';
 import { ShieldAlert, AlertTriangle, FileQuestion, ServerCrash } from 'lucide-react';
-import { JSX } from 'react';
+import type { JSX } from 'react';
 
 interface ErrorPageProps {
     status: number;

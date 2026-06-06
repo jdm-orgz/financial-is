@@ -14,7 +14,9 @@ interface PaginationProps {
 }
 
 export function Pagination({ links, className }: PaginationProps) {
-    if (!links || links.length <= 3) return null; // Only Previous, 1, Next
+    if (!links || links.length <= 3) {
+return null;
+} // Only Previous, 1, Next
 
     return (
         <div className={cn('flex items-center justify-end space-x-2 py-4', className)}>

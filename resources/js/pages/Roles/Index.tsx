@@ -1,14 +1,4 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { useState, useEffect, useRef } from 'react';
-import { Button } from '@/components/ui/button';
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '@/components/ui/table';
 import {
     Pencil,
     Trash2,
@@ -17,9 +7,12 @@ import {
     ArrowUp,
     ArrowDown,
 } from 'lucide-react';
-import { Switch } from '@/components/ui/switch';
-import { Pagination, PaginationLink } from '@/components/pagination';
+import { useState, useEffect, useRef } from 'react';
 import { DeleteModal } from '@/components/delete-modal';
+import type { PaginationLink } from '@/components/pagination';
+import { Pagination } from '@/components/pagination';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
     Select,
     SelectContent,
@@ -27,7 +20,15 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import { Input } from '@/components/ui/input';
+import { Switch } from '@/components/ui/switch';
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '@/components/ui/table';
 
 interface Role {
     id: number;
@@ -62,6 +63,7 @@ export default function Index({ roles, per_page, filters = {} }: IndexProps) {
     useEffect(() => {
         if (initialRender.current) {
             initialRender.current = false;
+
             return;
         }
 
@@ -105,8 +107,10 @@ export default function Index({ roles, per_page, filters = {} }: IndexProps) {
     };
 
     const renderSortIcon = (field: string) => {
-        if (filters.sort_by !== field)
-            return <ArrowUpDown className="ml-2 h-4 w-4" />;
+        if (filters.sort_by !== field) {
+return <ArrowUpDown className="ml-2 h-4 w-4" />;
+}
+
         return filters.sort_direction === 'asc' ? (
             <ArrowUp className="ml-2 h-4 w-4" />
         ) : (

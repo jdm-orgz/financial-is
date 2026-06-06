@@ -7,6 +7,7 @@ use App\Domain\UserAccess\Models\User;
 use App\Domain\UserAccess\Repositories\EloquentRoleRepository;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Crypt;
+use Lauthz\Facades\Enforcer;
 use Tests\TestCase;
 
 class RoleControllerTest extends TestCase
@@ -235,7 +236,7 @@ class RoleControllerTest extends TestCase
     public function test_cannot_edit_own_role_as_non_super_admin(): void
     {
         $supervisorRole = Role::factory()->create(['name' => 'supervisor']);
-        \Lauthz\Facades\Enforcer::addPolicy('supervisor', 'master/*', '*');
+        Enforcer::addPolicy('supervisor', 'master/*', '*');
         $supervisorUser = User::factory()->create(['role_id' => $supervisorRole->id]);
 
         $encryptedId = Crypt::encryptString((string) $supervisorRole->id);
@@ -246,7 +247,7 @@ class RoleControllerTest extends TestCase
     public function test_cannot_update_own_role_as_non_super_admin(): void
     {
         $supervisorRole = Role::factory()->create(['name' => 'supervisor']);
-        \Lauthz\Facades\Enforcer::addPolicy('supervisor', 'master/*', '*');
+        Enforcer::addPolicy('supervisor', 'master/*', '*');
         $supervisorUser = User::factory()->create(['role_id' => $supervisorRole->id]);
 
         $encryptedId = Crypt::encryptString((string) $supervisorRole->id);
@@ -262,7 +263,7 @@ class RoleControllerTest extends TestCase
         $roleToEdit = Role::factory()->create(['name' => 'test_role_perms']);
         $encryptedId = Crypt::encryptString((string) $roleToEdit->id);
 
-        \Lauthz\Facades\Enforcer::addPolicy($roleToEdit->name, 'old_permission', '*');
+        Enforcer::addPolicy($roleToEdit->name, 'old_permission', '*');
 
         $response = $this->actingAs($this->user)->put("/roles/{$encryptedId}", [
             'name' => 'test_role_perms_updated',
@@ -276,7 +277,7 @@ class RoleControllerTest extends TestCase
     public function test_cannot_delete_own_role_as_non_super_admin(): void
     {
         $supervisorRole = Role::factory()->create(['name' => 'supervisor']);
-        \Lauthz\Facades\Enforcer::addPolicy('supervisor', 'master/*', '*');
+        Enforcer::addPolicy('supervisor', 'master/*', '*');
         $supervisorUser = User::factory()->create(['role_id' => $supervisorRole->id]);
 
         $encryptedId = Crypt::encryptString((string) $supervisorRole->id);
@@ -287,7 +288,7 @@ class RoleControllerTest extends TestCase
     public function test_cannot_update_status_of_own_role_as_non_super_admin(): void
     {
         $supervisorRole = Role::factory()->create(['name' => 'supervisor', 'is_active' => '1']);
-        \Lauthz\Facades\Enforcer::addPolicy('supervisor', 'master/*', '*');
+        Enforcer::addPolicy('supervisor', 'master/*', '*');
         $supervisorUser = User::factory()->create(['role_id' => $supervisorRole->id]);
 
         $encryptedId = Crypt::encryptString((string) $supervisorRole->id);

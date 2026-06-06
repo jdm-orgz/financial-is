@@ -1,6 +1,12 @@
 import { Head, Link, router } from '@inertiajs/react';
+import { Pencil, Plus, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
+import type { PaginationLink } from '@/components/pagination';
+import { Pagination } from '@/components/pagination';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { MultiSelectModal } from '@/components/ui/multi-select-modal';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
     Table,
     TableBody,
@@ -9,11 +15,6 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import { Pencil, Plus, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
-import { Pagination, PaginationLink } from '@/components/pagination';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Input } from '@/components/ui/input';
-import { MultiSelectModal } from '@/components/ui/multi-select-modal';
 
 interface UserWithOutlets {
     id: string;
@@ -63,6 +64,7 @@ export default function Index({ linkedOutletUsers, per_page, filters = {}, roles
     useEffect(() => {
         if (initialRender.current) {
             initialRender.current = false;
+
             return;
         }
 
@@ -79,7 +81,10 @@ export default function Index({ linkedOutletUsers, per_page, filters = {}, roles
     };
 
     const renderSortIcon = (field: string) => {
-        if (filters.sort_by !== field) return <ArrowUpDown className="ml-2 h-4 w-4" />;
+        if (filters.sort_by !== field) {
+return <ArrowUpDown className="ml-2 h-4 w-4" />;
+}
+
         return filters.sort_direction === 'asc' ? <ArrowUp className="ml-2 h-4 w-4" /> : <ArrowDown className="ml-2 h-4 w-4" />;
     };
 

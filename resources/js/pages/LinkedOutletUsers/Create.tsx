@@ -1,8 +1,8 @@
 import { Head, Link, useForm } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { MultiSelectModal } from '@/components/ui/multi-select-modal';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface User {
     id: string;
@@ -33,8 +33,12 @@ export default function Create({ users, outlets, assignedOutletsMap }: CreatePro
 
     // Determine available outlets for the selected user
     const availableOutlets = outlets.filter((outlet) => {
-        if (!data.user_id) return true; // Show all if no user selected, or hide? The prompt says "show all outlets that not assigned yet to this user". It's better to show all if no user is selected, or we can enforce selecting user first.
+        if (!data.user_id) {
+return true;
+} // Show all if no user selected, or hide? The prompt says "show all outlets that not assigned yet to this user". It's better to show all if no user is selected, or we can enforce selecting user first.
+
         const userAssignedOutlets = assignedOutletsMap[data.user_id] || [];
+
         return !userAssignedOutlets.includes(outlet.id);
     });
 

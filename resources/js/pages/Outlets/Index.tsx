@@ -1,6 +1,13 @@
 import { Head, Link, router } from '@inertiajs/react';
+import { Pencil, Trash2, Plus, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
+import { DeleteModal } from '@/components/delete-modal';
+import type { PaginationLink } from '@/components/pagination';
+import { Pagination } from '@/components/pagination';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
 import {
     Table,
     TableBody,
@@ -9,12 +16,6 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import { Pencil, Trash2, Plus, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
-import { Switch } from '@/components/ui/switch';
-import { Pagination, PaginationLink } from '@/components/pagination';
-import { DeleteModal } from '@/components/delete-modal';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Input } from '@/components/ui/input';
 
 interface Outlet {
     id: number;
@@ -48,6 +49,7 @@ export default function Index({ outlets, per_page, filters = {} }: IndexProps) {
     useEffect(() => {
         if (initialRender.current) {
             initialRender.current = false;
+
             return;
         }
 
@@ -76,7 +78,10 @@ export default function Index({ outlets, per_page, filters = {} }: IndexProps) {
     };
 
     const renderSortIcon = (field: string) => {
-        if (filters.sort_by !== field) return <ArrowUpDown className="ml-2 h-4 w-4" />;
+        if (filters.sort_by !== field) {
+return <ArrowUpDown className="ml-2 h-4 w-4" />;
+}
+
         return filters.sort_direction === 'asc' ? <ArrowUp className="ml-2 h-4 w-4" /> : <ArrowDown className="ml-2 h-4 w-4" />;
     };
 

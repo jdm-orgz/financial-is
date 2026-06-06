@@ -332,7 +332,7 @@ class UserControllerTest extends TestCase
     public function test_cannot_update_own_role_as_non_super_admin(): void
     {
         $encryptedId = Crypt::encryptString((string) $this->user->id);
-        
+
         $newRole = Role::factory()->create(['name' => 'new_role']);
         $encryptedRoleId = Crypt::encryptString((string) $newRole->id);
 

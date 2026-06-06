@@ -27,6 +27,7 @@ $(function () {
       //Close all other popovers:
       $popovers.each(function () {
         var $current = $(this);
+
         if (!$current.is($container)) {
           $current.popover('hide');
         }
