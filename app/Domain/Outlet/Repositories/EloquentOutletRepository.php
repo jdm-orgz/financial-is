@@ -23,7 +23,7 @@ class EloquentOutletRepository implements OutletRepositoryInterface
             $query->orderBy($sortBy, $sortDirection === 'desc' ? 'desc' : 'asc');
         }
 
-        return $query->paginate($perPage)->withQueryString();
+        return $query->withCount('chairs')->paginate($perPage)->withQueryString();
     }
 
     /**

@@ -91,11 +91,45 @@ class OutletControllerTest extends TestCase
         $response = $this->actingAs($this->user)->post('/outlets', [
             'name' => 'new_outlet',
             'address' => 'new outlet address',
+            'prefix' => 'NEW',
         ]);
 
         $response->assertRedirect('/outlets');
         $this->assertDatabaseHas('outlets', [
             'name' => 'new_outlet',
+        ]);
+    }
+
+    public function test_can_store_outlet_with_chairs(): void
+    {
+        $response = $this->actingAs($this->user)->post('/outlets', [
+            'name' => 'new_outlet_with_chairs',
+            'address' => 'new outlet address',
+            'prefix' => 'NEWC',
+            'chairs_count' => 3,
+        ]);
+
+        $response->assertRedirect('/outlets');
+        $this->assertDatabaseHas('outlets', [
+            'name' => 'new_outlet_with_chairs',
+        ]);
+        
+        $outlet = Outlet::where('name', 'new_outlet_with_chairs')->first();
+        
+        $this->assertDatabaseHas('chair_prefixes', [
+            'outlet_id' => $outlet->id,
+            'prefix' => 'NEWC',
+            'last_counter' => 3,
+        ]);
+
+        $this->assertDatabaseCount('chairs', 3);
+        $this->assertDatabaseHas('chairs', [
+            'outlet_id' => $outlet->id,
+            'name' => 'NEWC-1',
+        ]);
+        $this->assertDatabaseHas('chairs', [
+            'outlet_id' => $outlet->id,
+            'name' => 'NEWC-3',
         ]);
     }
 

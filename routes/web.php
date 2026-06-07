@@ -1,8 +1,10 @@
 <?php
 
+use App\Domain\Outlet\Models\Chair;
 use App\Domain\Outlet\Models\Outlet;
 use App\Domain\UserAccess\Models\Role;
 use App\Domain\UserAccess\Models\User;
+use App\Http\Controllers\Master\ChairController;
 use App\Http\Controllers\Master\LinkedOutletUserController;
 use App\Http\Controllers\Master\OutletController;
 use App\Http\Controllers\Master\RoleController;
@@ -17,7 +19,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             'totalUsers' => User::count(),
             'totalRoles' => Role::count(),
             'totalOutlets' => Outlet::count(),
-            'totalChairs' => 0, // TODO: waiting for layer implementation
+            'totalChairs' => Chair::count(),
         ]);
     })->name('dashboard');
 
@@ -30,6 +32,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         Route::resource('outlets', OutletController::class)->except(['show']);
         Route::patch('outlets/{outlet}/status', [OutletController::class, 'updateStatus'])->name('outlets.status.update');
+        Route::resource('outlets.chairs', ChairController::class)->except(['show', 'index']);
+        Route::post('outlets/{outlet}/chairs/bulk', [ChairController::class, 'storeBulk'])->name('outlets.chairs.bulk');
+        Route::get('outlets/{outlet}/chairs', [ChairController::class, 'index'])->name('outlets.chairs.index');
+        Route::patch('outlets/{outlet}/chairs/{chair}/status', [ChairController::class, 'updateStatus'])->name('outlets.chairs.status.update');
     });
 
     Route::middleware(['permission:configuration/*,*'])->group(function () {

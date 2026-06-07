@@ -59,14 +59,13 @@ interface IndexProps {
 export default function Index({ linkedOutletUsers, per_page, filters = {}, roles = [] }: IndexProps) {
     const [search, setSearch] = useState(filters.search || '');
     const [roleNames, setRoleNames] = useState<string[]>(filters.roles || []);
-    const initialRender = useRef(true);
+    const prevSearch = useRef(search);
 
     useEffect(() => {
-        if (initialRender.current) {
-            initialRender.current = false;
-
+        if (search === prevSearch.current) {
             return;
         }
+        prevSearch.current = search;
 
         const timeoutId = setTimeout(() => {
             router.get(window.location.pathname, { ...filters, search, roles: roleNames, per_page }, { preserveState: true, preserveScroll: true, replace: true });
