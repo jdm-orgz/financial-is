@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Domain\Outlet\Repositories\ChairRepositoryInterface;
+use App\Domain\Outlet\Repositories\EloquentChairRepository;
 use App\Domain\Outlet\Repositories\EloquentLinkedOutletUserRepository;
 use App\Domain\Outlet\Repositories\EloquentOutletRepository;
 use App\Domain\Outlet\Repositories\LinkedOutletUserRepositoryInterface;
@@ -43,6 +45,11 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(
             LinkedOutletUserRepositoryInterface::class,
             EloquentLinkedOutletUserRepository::class
+        );
+
+        $this->app->bind(
+            ChairRepositoryInterface::class,
+            EloquentChairRepository::class
         );
     }
 

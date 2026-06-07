@@ -65,14 +65,13 @@ export default function Index({ users, per_page, filters = {} }: IndexProps) {
     const { auth } = usePage<any>().props;
     const [userToDelete, setUserToDelete] = useState<string | null>(null);
     const [search, setSearch] = useState(filters.search || '');
-    const initialRender = useRef(true);
+    const prevSearch = useRef(search);
 
     useEffect(() => {
-        if (initialRender.current) {
-            initialRender.current = false;
-
+        if (search === prevSearch.current) {
             return;
         }
+        prevSearch.current = search;
 
         const timeoutId = setTimeout(() => {
             router.get(

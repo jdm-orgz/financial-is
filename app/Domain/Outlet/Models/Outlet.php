@@ -31,4 +31,20 @@ class Outlet extends Model
             ->using(LinkedOutletUser::class)
             ->withTimestamps();
     }
+
+    /**
+     * Get the chairs for the outlet.
+     */
+    public function chairs()
+    {
+        return $this->hasMany(Chair::class);
+    }
+
+    /**
+     * Get the chair prefix for the outlet.
+     */
+    public function chairPrefix()
+    {
+        return $this->hasOne(ChairPrefix::class);
+    }
 }

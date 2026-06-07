@@ -18,7 +18,8 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             RoleSeeder::class,
-            OutletSeeder::class,
+            // OutletSeeder::class,
+            // ChairSeeder::class,
         ]);
 
         $superAdminRole = Role::where('name', 'super_admin')->first();

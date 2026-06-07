@@ -7,6 +7,8 @@ export default function Create() {
     const { data, setData, post, processing, errors } = useForm({
         name: '',
         address: '',
+        prefix: '',
+        chairs_count: 0,
     });
 
     const submit = (e: React.FormEvent) => {
@@ -47,6 +49,30 @@ export default function Create() {
                                 placeholder="Outlet Address"
                             />
                             {errors.address && <p className="text-sm text-destructive">{errors.address}</p>}
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="chairs_count">Number of Chairs to Generate</Label>
+                            <Input
+                                id="chairs_count"
+                                type="number"
+                                min="0"
+                                value={data.chairs_count}
+                                onChange={(e) => setData('chairs_count', parseInt(e.target.value) || 0)}
+                                placeholder="Number of Chairs"
+                            />
+                            {errors.chairs_count && <p className="text-sm text-destructive">{errors.chairs_count}</p>}
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="prefix">Chair Prefix</Label>
+                            <Input
+                                id="prefix"
+                                value={data.prefix}
+                                onChange={(e) => setData('prefix', e.target.value)}
+                                placeholder="e.g. VIP, TBL, CHR"
+                            />
+                            {errors.prefix && <p className="text-sm text-destructive">{errors.prefix}</p>}
                         </div>
 
                         <Button type="submit" disabled={processing}>

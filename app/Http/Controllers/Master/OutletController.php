@@ -50,7 +50,30 @@ class OutletController extends Controller
      */
     public function store(StoreOutletRequest $request): RedirectResponse
     {
-        $this->outletRepository->create($request->validated());
+        $data = $request->validated();
+
+        $prefix = $data['prefix'];
+        unset($data['prefix']);
+
+        $outlet = $this->outletRepository->create($data);
+
+        $lastCounter = 0;
+        $chairsCount = isset($data['chairs_count']) ? (int) $data['chairs_count'] : 0;
+
+        if ($chairsCount > 0) {
+            for ($i = 1; $i <= $chairsCount; $i++) {
+                $lastCounter++;
+                $outlet->chairs()->create([
+                    'name' => $prefix.'-'.$lastCounter,
+                    'is_active' => '1',
+                ]);
+            }
+        }
+
+        $outlet->chairPrefix()->create([
+            'prefix' => $prefix,
+            'last_counter' => $lastCounter,
+        ]);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Outlet created successfully.']);
 
