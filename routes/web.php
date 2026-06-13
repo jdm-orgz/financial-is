@@ -4,6 +4,7 @@ use App\Domain\Outlet\Models\Chair;
 use App\Domain\Outlet\Models\Outlet;
 use App\Domain\UserAccess\Models\Role;
 use App\Domain\UserAccess\Models\User;
+use App\Http\Controllers\Master\AppConfigController;
 use App\Http\Controllers\Master\ChairController;
 use App\Http\Controllers\Master\LinkedOutletUserController;
 use App\Http\Controllers\Master\OutletController;
@@ -39,6 +40,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
     Route::middleware(['permission:configuration/*,*'])->group(function () {
+        Route::get('app-config', [AppConfigController::class, 'edit'])->name('app-config.edit');
+        Route::post('app-config', [AppConfigController::class, 'update'])->name('app-config.update');
+
         Route::resource('linked-outlet-users', LinkedOutletUserController::class)->except(['show']);
         Route::patch('linked-outlet-users/{linked_outlet_user}/status', [LinkedOutletUserController::class, 'updateStatus'])->name('linked-outlet-users.status.update');
     });

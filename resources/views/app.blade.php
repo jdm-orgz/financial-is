@@ -3,6 +3,14 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
+        
+        @php
+            $appName = \App\Domain\Settings\Models\Setting::get('app_name', config('app.name', 'Laravel'));
+            $appLogoPath = \App\Domain\Settings\Models\Setting::get('app_logo');
+            $appLogoUrl = $appLogoPath ? \Illuminate\Support\Facades\Storage::url($appLogoPath) : null;
+        @endphp
+        
+        <meta name="app-name" content="{{ $appName }}">
 
         {{-- Inline script to detect system dark mode preference and apply it immediately --}}
         <script>
@@ -30,16 +38,22 @@
             }
         </style>
 
-        <link rel="icon" href="/favicon.ico" sizes="any">
-        <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-        <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+
+        @if($appLogoUrl)
+            <link rel="icon" href="{{ $appLogoUrl }}" sizes="any">
+            <link rel="apple-touch-icon" href="{{ $appLogoUrl }}">
+        @else
+            <link rel="icon" href="/favicon.ico" sizes="any">
+            <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+            <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+        @endif
 
         @fonts
 
         @viteReactRefresh
         @vite(['resources/css/app.css', 'resources/js/app.tsx', "resources/js/pages/{$page['component']}.tsx"])
         <x-inertia::head>
-            <title>{{ config('app.name', 'Laravel') }}</title>
+            <title>{{ $appName }}</title>
         </x-inertia::head>
     </head>
     <body class="font-sans antialiased">
