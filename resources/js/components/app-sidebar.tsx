@@ -50,6 +50,7 @@ export function AppSidebar() {
             icon: Database,
             items: [
                 { title: 'User\'s Outlets', href: '/linked-outlet-users' },
+                { title: 'App Config', href: '/app-config' },
             ],
         });
     }

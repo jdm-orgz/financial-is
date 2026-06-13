@@ -2,7 +2,9 @@
 
 namespace App\Http\Middleware;
 
+use App\Domain\Settings\Models\Setting;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Middleware;
 
 class HandleInertiaRequests extends Middleware
@@ -35,9 +37,13 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
+        $appName = Setting::get('app_name', config('app.name'));
+        $appLogo = Setting::get('app_logo');
+
         return [
             ...parent::share($request),
-            'name' => config('app.name'),
+            'name' => $appName,
+            'app_logo' => $appLogo ? Storage::url($appLogo) : null,
             'auth' => [
                 'user' => $request->user() ? array_merge($request->user()->toArray(), [
                     'role_name' => $request->user()->role->name ?? null,
