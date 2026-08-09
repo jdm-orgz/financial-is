@@ -51,8 +51,8 @@ class LinkedOutletUserController extends Controller
      */
     public function create(): Response
     {
-        $users = User::select('id', 'name', 'email', 'role_id')->where('is_active', '1')->with('role:id,description')->get();
-        $outlets = Outlet::select('id', 'name')->where('is_active', '1')->get();
+        $users = User::select('id', 'name', 'email', 'role_id')->where('is_active', '1')->with('role:id,description')->orderBy('name', 'asc')->get();
+        $outlets = Outlet::select('id', 'name')->where('is_active', '1')->orderBy('name', 'asc')->get();
 
         $usersArray = $users->toArray();
         $outletsArray = $outlets->toArray();
@@ -125,8 +125,8 @@ class LinkedOutletUserController extends Controller
             abort(404);
         }
 
-        $users = User::select('id', 'name', 'email', 'role_id')->where('is_active', '1')->with('role:id,description')->get();
-        $outlets = Outlet::select('id', 'name')->where('is_active', '1')->get();
+        $users = User::select('id', 'name', 'email', 'role_id')->where('is_active', '1')->with('role:id,description')->orderBy('name', 'asc')->get();
+        $outlets = Outlet::select('id', 'name')->where('is_active', '1')->orderBy('name', 'asc')->get();
 
         $usersArray = $users->toArray();
         $outletsArray = $outlets->toArray();

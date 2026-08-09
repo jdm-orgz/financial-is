@@ -9,31 +9,54 @@ interface DashboardProps {
     totalChairs: number;
 }
 
-export default function Dashboard({ totalUsers, totalRoles, totalOutlets, totalChairs }: DashboardProps) {
+export default function Dashboard({
+    totalUsers,
+    totalRoles,
+    totalOutlets,
+    totalChairs,
+}: DashboardProps) {
     return (
         <>
             <Head title="Dashboard" />
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
                 <div className="grid auto-rows-min gap-4 md:grid-cols-3">
                     <div className="relative flex flex-col gap-4 overflow-hidden rounded-xl border border-sidebar-border/70 p-6 dark:border-sidebar-border">
-                        <h2 className="text-lg font-semibold tracking-tight">Master Data</h2>
-                        <div className="grid grid-cols-2 gap-4 flex-1">
+                        <h2 className="text-lg font-semibold tracking-tight">
+                            Master Data
+                        </h2>
+                        <div className="grid flex-1 grid-cols-2 gap-4">
                             <div className="flex flex-col justify-center rounded-lg bg-neutral-100 p-4 dark:bg-neutral-800/50">
-                                <span className="text-sm font-medium text-neutral-500 dark:text-neutral-400">Total Users</span>
-                                <span className="text-2xl font-bold">{totalUsers}</span>
+                                <span className="text-sm font-medium text-neutral-500 dark:text-neutral-400">
+                                    Total Users
+                                </span>
+                                <span className="text-2xl font-bold">
+                                    {totalUsers}
+                                </span>
                             </div>
                             <div className="flex flex-col justify-center rounded-lg bg-neutral-100 p-4 dark:bg-neutral-800/50">
-                                <span className="text-sm font-medium text-neutral-500 dark:text-neutral-400">Total Roles</span>
-                                <span className="text-2xl font-bold">{totalRoles}</span>
+                                <span className="text-sm font-medium text-neutral-500 dark:text-neutral-400">
+                                    Total Roles
+                                </span>
+                                <span className="text-2xl font-bold">
+                                    {totalRoles}
+                                </span>
                             </div>
                             <div className="flex flex-col justify-center rounded-lg bg-neutral-100 p-4 dark:bg-neutral-800/50">
-                                <span className="text-sm font-medium text-neutral-500 dark:text-neutral-400">Total Outlets</span>
-                                <span className="text-2xl font-bold">{totalOutlets}</span>
+                                <span className="text-sm font-medium text-neutral-500 dark:text-neutral-400">
+                                    Total Outlets
+                                </span>
+                                <span className="text-2xl font-bold">
+                                    {totalOutlets}
+                                </span>
                                 {/* TODO: waiting for layer implementation */}
                             </div>
                             <div className="flex flex-col justify-center rounded-lg bg-neutral-100 p-4 dark:bg-neutral-800/50">
-                                <span className="text-sm font-medium text-neutral-500 dark:text-neutral-400">Total Chairs</span>
-                                <span className="text-2xl font-bold">{totalChairs}</span>
+                                <span className="text-sm font-medium text-neutral-500 dark:text-neutral-400">
+                                    Total Chairs
+                                </span>
+                                <span className="text-2xl font-bold">
+                                    {totalChairs}
+                                </span>
                                 {/* TODO: waiting for layer implementation */}
                             </div>
                         </div>

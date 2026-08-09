@@ -20,7 +20,11 @@ const footerNavItems: NavItem[] = [];
 
 export function AppSidebar() {
     const { auth } = usePage<any>().props;
-    const permissions = auth?.permissions || { master: false, configuration: false, transaction: false };
+    const permissions = auth?.permissions || {
+        master: false,
+        configuration: false,
+        app_config: false,
+    };
 
     const mainNavItems: NavItem[] = [
         {
@@ -43,26 +47,29 @@ export function AppSidebar() {
         });
     }
 
-    if (permissions.configuration) {
+    if (permissions.configuration || permissions.app_config) {
+        const configItems = [];
+
+        if (permissions.configuration) {
+            configItems.push({
+                title: "User's Outlets",
+                href: '/linked-outlet-users',
+            });
+        }
+
+        if (permissions.app_config) {
+            configItems.push({ title: 'App Config', href: '/app-config' });
+        }
+
         mainNavItems.push({
             title: 'Configuration',
             href: '#',
             icon: Database,
-            items: [
-                { title: 'User\'s Outlets', href: '/linked-outlet-users' },
-                { title: 'App Config', href: '/app-config' },
-            ],
+            items: configItems,
         });
     }
 
-    if (permissions.transaction) {
-        mainNavItems.push({
-            title: 'Transaction',
-            href: '#',
-            icon: Database,
-            items: [],
-        });
-    }
+
 
     return (
         <Sidebar collapsible="icon" variant="inset">

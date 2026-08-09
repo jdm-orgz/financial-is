@@ -27,8 +27,8 @@ export default function Edit({ outlet }: EditProps) {
     return (
         <>
             <Head title="Edit Outlet" />
-            <div className="flex h-full flex-1 flex-col gap-4 p-4 max-w-2xl">
-                <div className="flex justify-between items-center">
+            <div className="flex h-full max-w-2xl flex-1 flex-col gap-4 p-4">
+                <div className="flex items-center justify-between">
                     <h1 className="text-2xl font-bold">Edit Outlet</h1>
                     <Button variant="outline" asChild>
                         <Link href="/outlets">Back</Link>
@@ -42,10 +42,16 @@ export default function Edit({ outlet }: EditProps) {
                             <Input
                                 id="name"
                                 value={data.name}
-                                onChange={(e) => setData('name', e.target.value)}
+                                onChange={(e) =>
+                                    setData('name', e.target.value)
+                                }
                                 placeholder="Outlet Name"
                             />
-                            {errors.name && <p className="text-sm text-destructive">{errors.name}</p>}
+                            {errors.name && (
+                                <p className="text-sm text-destructive">
+                                    {errors.name}
+                                </p>
+                            )}
                         </div>
 
                         <div className="space-y-2">
@@ -53,10 +59,16 @@ export default function Edit({ outlet }: EditProps) {
                             <Input
                                 id="address"
                                 value={data.address}
-                                onChange={(e) => setData('address', e.target.value)}
+                                onChange={(e) =>
+                                    setData('address', e.target.value)
+                                }
                                 placeholder="Outlet Address"
                             />
-                            {errors.address && <p className="text-sm text-destructive">{errors.address}</p>}
+                            {errors.address && (
+                                <p className="text-sm text-destructive">
+                                    {errors.address}
+                                </p>
+                            )}
                         </div>
 
                         <Button type="submit" disabled={processing}>

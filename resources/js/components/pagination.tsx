@@ -15,11 +15,16 @@ interface PaginationProps {
 
 export function Pagination({ links, className }: PaginationProps) {
     if (!links || links.length <= 3) {
-return null;
-} // Only Previous, 1, Next
+        return null;
+    } // Only Previous, 1, Next
 
     return (
-        <div className={cn('flex items-center justify-end space-x-2 py-4', className)}>
+        <div
+            className={cn(
+                'flex items-center justify-end space-x-2 py-4',
+                className,
+            )}
+        >
             {links.map((link, i) => {
                 const isPrevious = link.label.includes('Previous');
                 const isNext = link.label.includes('Next');
@@ -29,11 +34,13 @@ return null;
                         <Button
                             key={i}
                             variant="outline"
-                            size={isPrevious || isNext ? "default" : "icon"}
+                            size={isPrevious || isNext ? 'default' : 'icon'}
                             disabled
                             className="opacity-50"
                         >
-                            <span dangerouslySetInnerHTML={{ __html: link.label }} />
+                            <span
+                                dangerouslySetInnerHTML={{ __html: link.label }}
+                            />
                         </Button>
                     );
                 }
@@ -42,10 +49,13 @@ return null;
                     <Button
                         key={i}
                         variant={link.active ? 'default' : 'outline'}
-                        size={isPrevious || isNext ? "default" : "icon"}
+                        size={isPrevious || isNext ? 'default' : 'icon'}
                         asChild
                     >
-                        <Link href={link.url} dangerouslySetInnerHTML={{ __html: link.label }} />
+                        <Link
+                            href={link.url}
+                            dangerouslySetInnerHTML={{ __html: link.label }}
+                        />
                     </Button>
                 );
             })}

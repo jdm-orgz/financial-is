@@ -64,6 +64,7 @@ export default function Index({ roles, per_page, filters = {} }: IndexProps) {
         if (search === prevSearch.current) {
             return;
         }
+
         prevSearch.current = search;
 
         const timeoutId = setTimeout(() => {
@@ -107,8 +108,8 @@ export default function Index({ roles, per_page, filters = {} }: IndexProps) {
 
     const renderSortIcon = (field: string) => {
         if (filters.sort_by !== field) {
-return <ArrowUpDown className="ml-2 h-4 w-4" />;
-}
+            return <ArrowUpDown className="ml-2 h-4 w-4" />;
+        }
 
         return filters.sort_direction === 'asc' ? (
             <ArrowUp className="ml-2 h-4 w-4" />
@@ -203,13 +204,16 @@ return <ArrowUpDown className="ml-2 h-4 w-4" />;
                                         </TableCell>
                                         <TableCell className="text-right">
                                             <div className="flex items-center justify-end gap-3">
-                                                {(
-                                                    (auth.user as any).role_name === 'super_admin' || 
-                                                    (
-                                                        !['super_admin', 'admin'].includes(role.name) && 
-                                                        role.name !== (auth.user as any).role_name
-                                                    )
-                                                ) && (
+                                                {((auth.user as any)
+                                                    .role_name ===
+                                                    'super_admin' ||
+                                                    (![
+                                                        'super_admin',
+                                                        'admin',
+                                                    ].includes(role.name) &&
+                                                        role.name !==
+                                                            (auth.user as any)
+                                                                .role_name)) && (
                                                     <>
                                                         <Switch
                                                             checked={

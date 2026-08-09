@@ -52,6 +52,7 @@ class HandleInertiaRequests extends Middleware
                     'master' => $request->user() ? $request->user()->hasPermissionTo('master/*', '*') : false,
                     'configuration' => $request->user() ? $request->user()->hasPermissionTo('configuration/*', '*') : false,
                     'transaction' => $request->user() ? $request->user()->hasPermissionTo('transaction/*', '*') : false,
+                    'app_config' => $request->user() ? $request->user()->hasPermissionTo('app-config/*', '*') : false,
                 ],
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',

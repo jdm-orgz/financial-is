@@ -17,7 +17,7 @@ class AppConfigControllerTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $role = Role::factory()->create(['name' => 'admin']);
+        $role = Role::factory()->create(['name' => 'super_admin']);
         $this->user = User::factory()->create(['role_id' => $role->id]);
     }
 
@@ -52,10 +52,10 @@ class AppConfigControllerTest extends TestCase
         ]);
 
         $response->assertRedirect();
-        
+
         $setting = Setting::where('key', 'app_logo')->first();
         $this->assertNotNull($setting);
-        
+
         Storage::disk('public')->assertExists($setting->value);
     }
 
@@ -76,10 +76,10 @@ class AppConfigControllerTest extends TestCase
         ]);
 
         $response->assertRedirect();
-        
+
         $setting = Setting::where('key', 'app_logo')->first();
         $this->assertNotNull($setting);
-        
+
         // Assert old logo is deleted
         Storage::disk('public')->assertMissing($oldPath);
         // Assert new logo exists
@@ -89,7 +89,7 @@ class AppConfigControllerTest extends TestCase
     public function test_can_remove_app_logo(): void
     {
         Storage::fake('public');
-        
+
         // Add existing logo
         $file = UploadedFile::fake()->image('logo.jpg');
         $path = $file->storeAs('app-logo', 'logo.jpg', 'public');
@@ -101,11 +101,11 @@ class AppConfigControllerTest extends TestCase
         ]);
 
         $response->assertRedirect();
-        
+
         $this->assertDatabaseMissing('settings', [
             'key' => 'app_logo',
         ]);
-        
+
         Storage::disk('public')->assertMissing($path);
     }
 }

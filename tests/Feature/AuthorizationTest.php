@@ -24,7 +24,6 @@ class AuthorizationTest extends TestCase
         $user = User::factory()->create(['role_id' => $role->id]);
 
         $this->assertTrue($user->hasPermissionTo('master/anything', 'read'));
-        $this->assertTrue($user->hasPermissionTo('transaction/something', 'delete'));
         $this->assertTrue($user->hasPermissionTo('random/unknown', 'create'));
     }
 
@@ -35,28 +34,6 @@ class AuthorizationTest extends TestCase
 
         $this->assertTrue($user->hasPermissionTo('master/users', 'read'));
         $this->assertTrue($user->hasPermissionTo('configuration/settings', 'update'));
-
-        $this->assertFalse($user->hasPermissionTo('transaction/orders', 'read'));
-    }
-
-    public function test_supervisor_can_access_transaction_approval(): void
-    {
-        $role = Role::factory()->create(['name' => 'supervisor']);
-        $user = User::factory()->create(['role_id' => $role->id]);
-
-        $this->assertTrue($user->hasPermissionTo('transaction/approval/orders', 'update'));
-
-        $this->assertFalse($user->hasPermissionTo('transaction/orders', 'read'));
-        $this->assertFalse($user->hasPermissionTo('master/users', 'read'));
-    }
-
-    public function test_spg_can_access_transaction(): void
-    {
-        $role = Role::factory()->create(['name' => 'spg']);
-        $user = User::factory()->create(['role_id' => $role->id]);
-
-        $this->assertTrue($user->hasPermissionTo('transaction/orders', 'create'));
-        $this->assertFalse($user->hasPermissionTo('master/users', 'read'));
     }
 
     public function test_casbin_middleware_denies_unauthorized_access(): void

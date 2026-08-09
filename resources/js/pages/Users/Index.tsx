@@ -71,6 +71,7 @@ export default function Index({ users, per_page, filters = {} }: IndexProps) {
         if (search === prevSearch.current) {
             return;
         }
+
         prevSearch.current = search;
 
         const timeoutId = setTimeout(() => {
@@ -114,8 +115,8 @@ export default function Index({ users, per_page, filters = {} }: IndexProps) {
 
     const renderSortIcon = (field: string) => {
         if (filters.sort_by !== field) {
-return <ArrowUpDown className="ml-2 h-4 w-4" />;
-}
+            return <ArrowUpDown className="ml-2 h-4 w-4" />;
+        }
 
         return filters.sort_direction === 'asc' ? (
             <ArrowUp className="ml-2 h-4 w-4" />
@@ -220,27 +221,36 @@ return <ArrowUpDown className="ml-2 h-4 w-4" />;
                                         </TableCell>
                                         <TableCell className="text-right">
                                             <div className="flex items-center justify-end gap-3">
-                                                {(user.role?.name !== 'super_admin' || (auth.user as any).role_name === 'super_admin') && (
+                                                {(user.role?.name !==
+                                                    'super_admin' ||
+                                                    (auth.user as any)
+                                                        .role_name ===
+                                                        'super_admin') && (
                                                     <>
-                                                        {(user.username !== auth.user.username || (auth.user as any).role_name === 'super_admin') && (
+                                                        {(user.username !==
+                                                            auth.user
+                                                                .username ||
+                                                            (auth.user as any)
+                                                                .role_name ===
+                                                                'super_admin') && (
                                                             <Switch
-                                                            checked={
-                                                                user.is_active ===
-                                                                '1'
-                                                            }
-                                                            onCheckedChange={() =>
-                                                                handleToggleStatus(
-                                                                    user.id,
-                                                                )
-                                                            }
-                                                            aria-label="Toggle status"
-                                                            title={
-                                                                user.is_active ===
-                                                                '1'
-                                                                    ? 'Deactivate'
-                                                                    : 'Activate'
-                                                            }
-                                                        />
+                                                                checked={
+                                                                    user.is_active ===
+                                                                    '1'
+                                                                }
+                                                                onCheckedChange={() =>
+                                                                    handleToggleStatus(
+                                                                        user.id,
+                                                                    )
+                                                                }
+                                                                aria-label="Toggle status"
+                                                                title={
+                                                                    user.is_active ===
+                                                                    '1'
+                                                                        ? 'Deactivate'
+                                                                        : 'Activate'
+                                                                }
+                                                            />
                                                         )}
                                                         <Button
                                                             variant="ghost"
@@ -253,7 +263,12 @@ return <ArrowUpDown className="ml-2 h-4 w-4" />;
                                                                 <Pencil className="h-4 w-4" />
                                                             </Link>
                                                         </Button>
-                                                        {(user.username !== auth.user.username || (auth.user as any).role_name === 'super_admin') && (
+                                                        {(user.username !==
+                                                            auth.user
+                                                                .username ||
+                                                            (auth.user as any)
+                                                                .role_name ===
+                                                                'super_admin') && (
                                                             <Button
                                                                 variant="ghost"
                                                                 size="icon"

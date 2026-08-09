@@ -40,12 +40,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
     Route::middleware(['permission:configuration/*,*'])->group(function () {
-        Route::get('app-config', [AppConfigController::class, 'edit'])->name('app-config.edit');
-        Route::post('app-config', [AppConfigController::class, 'update'])->name('app-config.update');
-
         Route::resource('linked-outlet-users', LinkedOutletUserController::class)->except(['show']);
         Route::patch('linked-outlet-users/{linked_outlet_user}/status', [LinkedOutletUserController::class, 'updateStatus'])->name('linked-outlet-users.status.update');
     });
+
+    Route::middleware(['permission:app-config/*,*'])->group(function () {
+        Route::get('app-config', [AppConfigController::class, 'edit'])->name('app-config.edit');
+        Route::post('app-config', [AppConfigController::class, 'update'])->name('app-config.update');
+    });
+
 });
 
 require __DIR__.'/settings.php';
