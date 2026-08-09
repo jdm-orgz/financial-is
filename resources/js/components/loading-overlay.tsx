@@ -11,6 +11,7 @@ export function LoadingOverlay() {
             if (event.detail?.visit?.prefetch) {
                 return;
             }
+
             setIsLoading(true);
         });
 
@@ -18,6 +19,7 @@ export function LoadingOverlay() {
             if (event.detail?.visit?.prefetch) {
                 return;
             }
+
             setIsLoading(false);
         });
 
@@ -27,7 +29,9 @@ export function LoadingOverlay() {
         };
     }, []);
 
-    if (!isLoading) return null;
+    if (!isLoading) {
+        return null;
+    }
 
     return (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-background/50 backdrop-blur-sm">

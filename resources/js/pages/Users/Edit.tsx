@@ -8,7 +8,7 @@ import {
     SelectItem,
     SelectTrigger,
     SelectValue,
-} from "@/components/ui/select";
+} from '@/components/ui/select';
 
 interface Role {
     id: number;
@@ -44,8 +44,8 @@ export default function Edit({ user, roles }: Props) {
     return (
         <>
             <Head title="Edit User" />
-            <div className="flex h-full flex-1 flex-col gap-4 p-4 max-w-2xl">
-                <div className="flex justify-between items-center">
+            <div className="flex h-full max-w-2xl flex-1 flex-col gap-4 p-4">
+                <div className="flex items-center justify-between">
                     <h1 className="text-2xl font-bold">Edit User</h1>
                     <Button variant="outline" asChild>
                         <Link href="/users">Back</Link>
@@ -60,10 +60,16 @@ export default function Edit({ user, roles }: Props) {
                                 id="username"
                                 type="text"
                                 value={data.username}
-                                onChange={(e) => setData('username', e.target.value)}
+                                onChange={(e) =>
+                                    setData('username', e.target.value)
+                                }
                                 placeholder="johndoe"
                             />
-                            {errors.username && <p className="text-sm text-destructive">{errors.username}</p>}
+                            {errors.username && (
+                                <p className="text-sm text-destructive">
+                                    {errors.username}
+                                </p>
+                            )}
                         </div>
 
                         <div className="space-y-2">
@@ -72,36 +78,57 @@ export default function Edit({ user, roles }: Props) {
                                 id="name"
                                 type="text"
                                 value={data.name}
-                                onChange={(e) => setData('name', e.target.value)}
+                                onChange={(e) =>
+                                    setData('name', e.target.value)
+                                }
                                 placeholder="John Doe"
                             />
-                            {errors.name && <p className="text-sm text-destructive">{errors.name}</p>}
+                            {errors.name && (
+                                <p className="text-sm text-destructive">
+                                    {errors.name}
+                                </p>
+                            )}
                         </div>
 
                         <div className="space-y-2">
                             <Label htmlFor="role_id">Role</Label>
-                            <Select 
-                                value={data.role_id} 
-                                onValueChange={(value) => setData('role_id', value)}
-                                disabled={user.username === auth.user.username && (auth.user as any).role_name !== 'super_admin'}
+                            <Select
+                                value={data.role_id}
+                                onValueChange={(value) =>
+                                    setData('role_id', value)
+                                }
+                                disabled={
+                                    user.username === auth.user.username &&
+                                    (auth.user as any).role_name !==
+                                        'super_admin'
+                                }
                             >
                                 <SelectTrigger id="role_id" className="w-full">
                                     <SelectValue placeholder="Select a role" />
                                 </SelectTrigger>
                                 <SelectContent>
                                     {roles.map((role) => (
-                                        <SelectItem key={role.id} value={role.id.toString()}>
+                                        <SelectItem
+                                            key={role.id}
+                                            value={role.id.toString()}
+                                        >
                                             {role.description}
                                         </SelectItem>
                                     ))}
                                 </SelectContent>
                             </Select>
-                            {user.username === auth.user.username && (auth.user as any).role_name !== 'super_admin' && (
-                                <p className="text-[0.8rem] font-medium text-muted-foreground">
-                                    You cannot update your own role.
+                            {user.username === auth.user.username &&
+                                (auth.user as any).role_name !==
+                                    'super_admin' && (
+                                    <p className="text-[0.8rem] font-medium text-muted-foreground">
+                                        You cannot update your own role.
+                                    </p>
+                                )}
+                            {errors.role_id && (
+                                <p className="text-sm text-destructive">
+                                    {errors.role_id}
                                 </p>
                             )}
-                            {errors.role_id && <p className="text-sm text-destructive">{errors.role_id}</p>}
                         </div>
 
                         <Button type="submit" disabled={processing}>

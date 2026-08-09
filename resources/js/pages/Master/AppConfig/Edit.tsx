@@ -1,8 +1,8 @@
 import { Head, useForm, usePage } from '@inertiajs/react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { toast } from 'sonner';
 
 interface EditProps {
     appName: string;
@@ -29,12 +29,17 @@ export default function Edit({ appName, appLogo, maxUploadSize }: EditProps) {
                 setData((prev) => ({
                     ...prev,
                     app_logo: null,
-                    remove_logo: false
+                    remove_logo: false,
                 }));
                 // Also reset the file input DOM element since React can't fully control it
-                const fileInput = document.getElementById('app_logo') as HTMLInputElement;
-                if (fileInput) fileInput.value = '';
-            }
+                const fileInput = document.getElementById(
+                    'app_logo',
+                ) as HTMLInputElement;
+
+                if (fileInput) {
+                    fileInput.value = '';
+                }
+            },
         });
     };
 
@@ -44,13 +49,13 @@ export default function Edit({ appName, appLogo, maxUploadSize }: EditProps) {
     return (
         <>
             <Head title="App Configuration" />
-            <div className="flex h-full flex-1 flex-col gap-4 p-4 max-w-2xl">
-                <div className="flex justify-between items-center">
+            <div className="flex h-full max-w-2xl flex-1 flex-col gap-4 p-4">
+                <div className="flex items-center justify-between">
                     <h1 className="text-2xl font-bold">App Configuration</h1>
                 </div>
 
                 {flash?.success && (
-                    <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative">
+                    <div className="relative rounded border border-green-400 bg-green-100 px-4 py-3 text-green-700">
                         {flash.success}
                     </div>
                 )}
@@ -62,10 +67,16 @@ export default function Edit({ appName, appLogo, maxUploadSize }: EditProps) {
                             <Input
                                 id="app_name"
                                 value={data.app_name}
-                                onChange={(e) => setData('app_name', e.target.value)}
+                                onChange={(e) =>
+                                    setData('app_name', e.target.value)
+                                }
                                 placeholder="Demo App"
                             />
-                            {errors.app_name && <p className="text-sm text-destructive">{errors.app_name}</p>}
+                            {errors.app_name && (
+                                <p className="text-sm text-destructive">
+                                    {errors.app_name}
+                                </p>
+                            )}
                         </div>
 
                         <div className="space-y-2">
@@ -75,30 +86,61 @@ export default function Edit({ appName, appLogo, maxUploadSize }: EditProps) {
                                 type="file"
                                 accept="image/*"
                                 onChange={(e) => {
-                                    const file = e.target.files ? e.target.files[0] : null;
-                                    if (file && file.size > maxUploadSize * 1024) {
-                                        toast.error(`File is too large! Maximum allowed size is ${maxUploadSize >= 1024 ? (maxUploadSize / 1024).toFixed(1) + ' MB' : maxUploadSize + ' KB'}.`);
+                                    const file = e.target.files
+                                        ? e.target.files[0]
+                                        : null;
+
+                                    if (
+                                        file &&
+                                        file.size > maxUploadSize * 1024
+                                    ) {
+                                        toast.error(
+                                            `File is too large! Maximum allowed size is ${maxUploadSize >= 1024 ? (maxUploadSize / 1024).toFixed(1) + ' MB' : maxUploadSize + ' KB'}.`,
+                                        );
                                         e.target.value = ''; // Clear the input
+
                                         return;
                                     }
-                                    setData((prev) => ({ ...prev, app_logo: file, remove_logo: false }));
+
+                                    setData((prev) => ({
+                                        ...prev,
+                                        app_logo: file,
+                                        remove_logo: false,
+                                    }));
                                 }}
                             />
                             <p className="text-sm text-muted-foreground">
-                                Leave blank if you don't want to change the logo. Max size: {maxUploadSize >= 1024 ? (maxUploadSize / 1024).toFixed(1) + ' MB' : maxUploadSize + ' KB'}.
+                                Leave blank if you don't want to change the
+                                logo. Max size:{' '}
+                                {maxUploadSize >= 1024
+                                    ? (maxUploadSize / 1024).toFixed(1) + ' MB'
+                                    : maxUploadSize + ' KB'}
+                                .
                             </p>
-                            {errors.app_logo && <p className="text-sm text-destructive">{errors.app_logo}</p>}
-                            
+                            {errors.app_logo && (
+                                <p className="text-sm text-destructive">
+                                    {errors.app_logo}
+                                </p>
+                            )}
+
                             {appLogo && !data.app_logo && !data.remove_logo && (
                                 <div className="mt-4">
-                                    <p className="text-sm font-medium mb-2">Current Logo:</p>
+                                    <p className="mb-2 text-sm font-medium">
+                                        Current Logo:
+                                    </p>
                                     <div className="flex items-end gap-4">
-                                        <img src={`/storage/${appLogo}`} alt="Current App Logo" className="h-20 w-20 object-contain rounded border" />
-                                        <Button 
-                                            type="button" 
-                                            variant="destructive" 
+                                        <img
+                                            src={`/storage/${appLogo}`}
+                                            alt="Current App Logo"
+                                            className="h-20 w-20 rounded border object-contain"
+                                        />
+                                        <Button
+                                            type="button"
+                                            variant="destructive"
                                             size="sm"
-                                            onClick={() => setData('remove_logo', true)}
+                                            onClick={() =>
+                                                setData('remove_logo', true)
+                                            }
                                         >
                                             Remove Logo
                                         </Button>
@@ -107,7 +149,9 @@ export default function Edit({ appName, appLogo, maxUploadSize }: EditProps) {
                             )}
 
                             {data.remove_logo && (
-                                <p className="text-sm text-amber-600 mt-2 font-medium">Logo will be removed upon saving.</p>
+                                <p className="mt-2 text-sm font-medium text-amber-600">
+                                    Logo will be removed upon saving.
+                                </p>
                             )}
                         </div>
 

@@ -15,11 +15,5 @@ class CasbinRuleSeeder extends Seeder
         // admin: master and configuration
         Enforcer::addPolicy('admin', 'master/*', '*');
         Enforcer::addPolicy('admin', 'configuration/*', '*');
-
-        // supervisor: transaction approval
-        Enforcer::addPolicy('supervisor', 'transaction/approval/*', '*');
-
-        // spg: transaction
-        Enforcer::addPolicy('spg', 'transaction/*', '*');
     }
 }

@@ -19,8 +19,8 @@ export default function Create() {
     return (
         <>
             <Head title="Create Outlet" />
-            <div className="flex h-full flex-1 flex-col gap-4 p-4 max-w-2xl">
-                <div className="flex justify-between items-center">
+            <div className="flex h-full max-w-2xl flex-1 flex-col gap-4 p-4">
+                <div className="flex items-center justify-between">
                     <h1 className="text-2xl font-bold">Create Outlet</h1>
                     <Button variant="outline" asChild>
                         <Link href="/outlets">Back</Link>
@@ -34,10 +34,16 @@ export default function Create() {
                             <Input
                                 id="name"
                                 value={data.name}
-                                onChange={(e) => setData('name', e.target.value)}
+                                onChange={(e) =>
+                                    setData('name', e.target.value)
+                                }
                                 placeholder="Outlet Name"
                             />
-                            {errors.name && <p className="text-sm text-destructive">{errors.name}</p>}
+                            {errors.name && (
+                                <p className="text-sm text-destructive">
+                                    {errors.name}
+                                </p>
+                            )}
                         </div>
 
                         <div className="space-y-2">
@@ -45,23 +51,40 @@ export default function Create() {
                             <Input
                                 id="address"
                                 value={data.address}
-                                onChange={(e) => setData('address', e.target.value)}
+                                onChange={(e) =>
+                                    setData('address', e.target.value)
+                                }
                                 placeholder="Outlet Address"
                             />
-                            {errors.address && <p className="text-sm text-destructive">{errors.address}</p>}
+                            {errors.address && (
+                                <p className="text-sm text-destructive">
+                                    {errors.address}
+                                </p>
+                            )}
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="chairs_count">Number of Chairs to Generate</Label>
+                            <Label htmlFor="chairs_count">
+                                Number of Chairs to Generate
+                            </Label>
                             <Input
                                 id="chairs_count"
                                 type="number"
                                 min="0"
                                 value={data.chairs_count}
-                                onChange={(e) => setData('chairs_count', parseInt(e.target.value) || 0)}
+                                onChange={(e) =>
+                                    setData(
+                                        'chairs_count',
+                                        parseInt(e.target.value) || 0,
+                                    )
+                                }
                                 placeholder="Number of Chairs"
                             />
-                            {errors.chairs_count && <p className="text-sm text-destructive">{errors.chairs_count}</p>}
+                            {errors.chairs_count && (
+                                <p className="text-sm text-destructive">
+                                    {errors.chairs_count}
+                                </p>
+                            )}
                         </div>
 
                         <div className="space-y-2">
@@ -69,10 +92,16 @@ export default function Create() {
                             <Input
                                 id="prefix"
                                 value={data.prefix}
-                                onChange={(e) => setData('prefix', e.target.value)}
+                                onChange={(e) =>
+                                    setData('prefix', e.target.value)
+                                }
                                 placeholder="e.g. VIP, TBL, CHR"
                             />
-                            {errors.prefix && <p className="text-sm text-destructive">{errors.prefix}</p>}
+                            {errors.prefix && (
+                                <p className="text-sm text-destructive">
+                                    {errors.prefix}
+                                </p>
+                            )}
                         </div>
 
                         <Button type="submit" disabled={processing}>

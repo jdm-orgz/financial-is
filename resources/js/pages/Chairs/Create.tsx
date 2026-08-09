@@ -25,9 +25,11 @@ export default function Create({ outlet }: CreateProps) {
     return (
         <>
             <Head title={`Create Chair - ${outlet.name}`} />
-            <div className="flex h-full flex-1 flex-col gap-4 p-4 max-w-2xl">
-                <div className="flex justify-between items-center">
-                    <h1 className="text-2xl font-bold">Create Chair for {outlet.name}</h1>
+            <div className="flex h-full max-w-2xl flex-1 flex-col gap-4 p-4">
+                <div className="flex items-center justify-between">
+                    <h1 className="text-2xl font-bold">
+                        Create Chair for {outlet.name}
+                    </h1>
                     <Button variant="outline" asChild>
                         <Link href={`/outlets/${outlet.id}/chairs`}>Back</Link>
                     </Button>
@@ -40,10 +42,16 @@ export default function Create({ outlet }: CreateProps) {
                             <Input
                                 id="name"
                                 value={data.name}
-                                onChange={(e) => setData('name', e.target.value)}
+                                onChange={(e) =>
+                                    setData('name', e.target.value)
+                                }
                                 placeholder="Leave blank to auto-generate"
                             />
-                            {errors.name && <p className="text-sm text-destructive">{errors.name}</p>}
+                            {errors.name && (
+                                <p className="text-sm text-destructive">
+                                    {errors.name}
+                                </p>
+                            )}
                         </div>
 
                         <Button type="submit" disabled={processing}>

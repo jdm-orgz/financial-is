@@ -16,7 +16,11 @@ interface EditProps {
     current_permissions: string[];
 }
 
-export default function Edit({ role, available_permissions, current_permissions }: EditProps) {
+export default function Edit({
+    role,
+    available_permissions,
+    current_permissions,
+}: EditProps) {
     const { data, setData, put, processing, errors } = useForm<{
         name: string;
         description: string;
@@ -35,8 +39,8 @@ export default function Edit({ role, available_permissions, current_permissions 
     return (
         <>
             <Head title="Edit Role" />
-            <div className="flex h-full flex-1 flex-col gap-4 p-4 max-w-2xl">
-                <div className="flex justify-between items-center">
+            <div className="flex h-full max-w-2xl flex-1 flex-col gap-4 p-4">
+                <div className="flex items-center justify-between">
                     <h1 className="text-2xl font-bold">Edit Role</h1>
                     <Button variant="outline" asChild>
                         <Link href="/roles">Back</Link>
@@ -50,11 +54,17 @@ export default function Edit({ role, available_permissions, current_permissions 
                             <Input
                                 id="name"
                                 value={data.name}
-                                onChange={(e) => setData('name', e.target.value)}
+                                onChange={(e) =>
+                                    setData('name', e.target.value)
+                                }
                                 placeholder="Role Name"
                                 disabled
                             />
-                            {errors.name && <p className="text-sm text-destructive">{errors.name}</p>}
+                            {errors.name && (
+                                <p className="text-sm text-destructive">
+                                    {errors.name}
+                                </p>
+                            )}
                         </div>
 
                         <div className="space-y-2">
@@ -62,44 +72,74 @@ export default function Edit({ role, available_permissions, current_permissions 
                             <Input
                                 id="description"
                                 value={data.description}
-                                onChange={(e) => setData('description', e.target.value)}
+                                onChange={(e) =>
+                                    setData('description', e.target.value)
+                                }
                                 placeholder="Role Description"
                             />
-                            {errors.description && <p className="text-sm text-destructive">{errors.description}</p>}
+                            {errors.description && (
+                                <p className="text-sm text-destructive">
+                                    {errors.description}
+                                </p>
+                            )}
                         </div>
 
                         <div className="space-y-3">
                             <Label>Permissions</Label>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 rounded-md border p-4">
-                                {Object.entries(available_permissions).map(([key, label]) => (
-                                    <div key={key} className="flex items-center space-x-2">
-                                        <Checkbox
-                                            id={`permission-${key}`}
-                                            checked={data.permissions.includes(key)}
-                                            disabled={role.name === 'super_admin'}
-                                            onCheckedChange={(checked) => {
-                                                if (checked) {
-                                                    setData('permissions', [...data.permissions, key]);
-                                                } else {
-                                                    setData('permissions', data.permissions.filter((p) => p !== key));
-                                                }
-                                            }}
-                                        />
-                                        <Label
-                                            htmlFor={`permission-${key}`}
-                                            className={`text-sm font-normal cursor-pointer leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 ${role.name === 'super_admin' ? 'text-muted-foreground' : ''}`}
+                            <div className="grid grid-cols-1 gap-4 rounded-md border p-4 sm:grid-cols-2">
+                                {Object.entries(available_permissions).map(
+                                    ([key, label]) => (
+                                        <div
+                                            key={key}
+                                            className="flex items-center space-x-2"
                                         >
-                                            {label}
-                                        </Label>
-                                    </div>
-                                ))}
+                                            <Checkbox
+                                                id={`permission-${key}`}
+                                                checked={data.permissions.includes(
+                                                    key,
+                                                )}
+                                                disabled={
+                                                    role.name === 'super_admin'
+                                                }
+                                                onCheckedChange={(checked) => {
+                                                    if (checked) {
+                                                        setData('permissions', [
+                                                            ...data.permissions,
+                                                            key,
+                                                        ]);
+                                                    } else {
+                                                        setData(
+                                                            'permissions',
+                                                            data.permissions.filter(
+                                                                (p) =>
+                                                                    p !== key,
+                                                            ),
+                                                        );
+                                                    }
+                                                }}
+                                            />
+                                            <Label
+                                                htmlFor={`permission-${key}`}
+                                                className={`cursor-pointer text-sm leading-none font-normal peer-disabled:cursor-not-allowed peer-disabled:opacity-70 ${role.name === 'super_admin' ? 'text-muted-foreground' : ''}`}
+                                            >
+                                                {label}
+                                            </Label>
+                                        </div>
+                                    ),
+                                )}
                             </div>
                             {role.name === 'super_admin' && (
                                 <p className="text-sm text-muted-foreground">
-                                    Super Admin role has implicit access to all modules and its permissions cannot be modified.
+                                    Super Admin role has implicit access to all
+                                    modules and its permissions cannot be
+                                    modified.
                                 </p>
                             )}
-                            {errors.permissions && <p className="text-sm text-destructive">{errors.permissions as string}</p>}
+                            {errors.permissions && (
+                                <p className="text-sm text-destructive">
+                                    {errors.permissions as string}
+                                </p>
+                            )}
                         </div>
 
                         <Button type="submit" disabled={processing}>

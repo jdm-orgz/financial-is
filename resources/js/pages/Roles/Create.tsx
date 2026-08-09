@@ -27,8 +27,8 @@ export default function Create({ available_permissions }: CreateProps) {
     return (
         <>
             <Head title="Create Role" />
-            <div className="flex h-full flex-1 flex-col gap-4 p-4 max-w-2xl">
-                <div className="flex justify-between items-center">
+            <div className="flex h-full max-w-2xl flex-1 flex-col gap-4 p-4">
+                <div className="flex items-center justify-between">
                     <h1 className="text-2xl font-bold">Create Role</h1>
                     <Button variant="outline" asChild>
                         <Link href="/roles">Back</Link>
@@ -42,10 +42,16 @@ export default function Create({ available_permissions }: CreateProps) {
                             <Input
                                 id="name"
                                 value={data.name}
-                                onChange={(e) => setData('name', e.target.value)}
+                                onChange={(e) =>
+                                    setData('name', e.target.value)
+                                }
                                 placeholder="Role Name"
                             />
-                            {errors.name && <p className="text-sm text-destructive">{errors.name}</p>}
+                            {errors.name && (
+                                <p className="text-sm text-destructive">
+                                    {errors.name}
+                                </p>
+                            )}
                         </div>
 
                         <div className="space-y-2">
@@ -53,38 +59,64 @@ export default function Create({ available_permissions }: CreateProps) {
                             <Input
                                 id="description"
                                 value={data.description}
-                                onChange={(e) => setData('description', e.target.value)}
+                                onChange={(e) =>
+                                    setData('description', e.target.value)
+                                }
                                 placeholder="Role Description"
                             />
-                            {errors.description && <p className="text-sm text-destructive">{errors.description}</p>}
+                            {errors.description && (
+                                <p className="text-sm text-destructive">
+                                    {errors.description}
+                                </p>
+                            )}
                         </div>
 
                         <div className="space-y-3">
                             <Label>Permissions</Label>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 rounded-md border p-4">
-                                {Object.entries(available_permissions).map(([key, label]) => (
-                                    <div key={key} className="flex items-center space-x-2">
-                                        <Checkbox
-                                            id={`permission-${key}`}
-                                            checked={data.permissions.includes(key)}
-                                            onCheckedChange={(checked) => {
-                                                if (checked) {
-                                                    setData('permissions', [...data.permissions, key]);
-                                                } else {
-                                                    setData('permissions', data.permissions.filter((p) => p !== key));
-                                                }
-                                            }}
-                                        />
-                                        <Label
-                                            htmlFor={`permission-${key}`}
-                                            className="text-sm font-normal cursor-pointer leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                            <div className="grid grid-cols-1 gap-4 rounded-md border p-4 sm:grid-cols-2">
+                                {Object.entries(available_permissions).map(
+                                    ([key, label]) => (
+                                        <div
+                                            key={key}
+                                            className="flex items-center space-x-2"
                                         >
-                                            {label}
-                                        </Label>
-                                    </div>
-                                ))}
+                                            <Checkbox
+                                                id={`permission-${key}`}
+                                                checked={data.permissions.includes(
+                                                    key,
+                                                )}
+                                                onCheckedChange={(checked) => {
+                                                    if (checked) {
+                                                        setData('permissions', [
+                                                            ...data.permissions,
+                                                            key,
+                                                        ]);
+                                                    } else {
+                                                        setData(
+                                                            'permissions',
+                                                            data.permissions.filter(
+                                                                (p) =>
+                                                                    p !== key,
+                                                            ),
+                                                        );
+                                                    }
+                                                }}
+                                            />
+                                            <Label
+                                                htmlFor={`permission-${key}`}
+                                                className="cursor-pointer text-sm leading-none font-normal peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                                            >
+                                                {label}
+                                            </Label>
+                                        </div>
+                                    ),
+                                )}
                             </div>
-                            {errors.permissions && <p className="text-sm text-destructive">{errors.permissions as string}</p>}
+                            {errors.permissions && (
+                                <p className="text-sm text-destructive">
+                                    {errors.permissions as string}
+                                </p>
+                            )}
                         </div>
 
                         <Button type="submit" disabled={processing}>

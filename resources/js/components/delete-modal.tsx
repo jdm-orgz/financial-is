@@ -29,7 +29,7 @@ export function DeleteModal({
                 <DialogTitle>{title}</DialogTitle>
                 <DialogDescription>{description}</DialogDescription>
 
-                <DialogFooter className="gap-2 sm:gap-4 mt-4">
+                <DialogFooter className="mt-4 gap-2 sm:gap-4">
                     <DialogClose asChild>
                         <Button variant="secondary">Cancel</Button>
                     </DialogClose>

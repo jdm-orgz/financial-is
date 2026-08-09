@@ -26,7 +26,10 @@ export function NavMain({ items = [] }: { items: NavItem[] }) {
             <SidebarGroupLabel>Menu</SidebarGroupLabel>
             <SidebarMenu>
                 {items.map((item) => {
-                    const isAnyChildActive = item.items?.some((subItem) => isCurrentUrl(subItem.href)) || isCurrentUrl(item.href);
+                    const isAnyChildActive =
+                        item.items?.some((subItem) =>
+                            isCurrentUrl(subItem.href),
+                        ) || isCurrentUrl(item.href);
 
                     return item.items && item.items.length > 0 ? (
                         <Collapsible
@@ -49,13 +52,22 @@ export function NavMain({ items = [] }: { items: NavItem[] }) {
                                 <CollapsibleContent>
                                     <SidebarMenuSub>
                                         {item.items.map((subItem) => (
-                                            <SidebarMenuSubItem key={subItem.title}>
+                                            <SidebarMenuSubItem
+                                                key={subItem.title}
+                                            >
                                                 <SidebarMenuSubButton
                                                     asChild
-                                                    isActive={isCurrentUrl(subItem.href)}
+                                                    isActive={isCurrentUrl(
+                                                        subItem.href,
+                                                    )}
                                                 >
-                                                    <Link href={subItem.href} prefetch>
-                                                        <span>{subItem.title}</span>
+                                                    <Link
+                                                        href={subItem.href}
+                                                        prefetch
+                                                    >
+                                                        <span>
+                                                            {subItem.title}
+                                                        </span>
                                                     </Link>
                                                 </SidebarMenuSubButton>
                                             </SidebarMenuSubItem>

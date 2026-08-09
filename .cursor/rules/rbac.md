@@ -20,14 +20,15 @@ This project uses Casbin (`casbin/laravel-authz`) for role-based access permissi
 
 ### `admin`
 - **Menu Access**: Menu master and configuration (`master/*`, `configuration/*`)
+- **Menu Access**: Menu transaction - approval (`transaction/approval/admin/*`)
 - **CRUD**: All actions for master and configuration (`*`)
 
 ### `supervisor`
-- **Menu Access**: Menu transaction - approval (`transaction/approval/*`)
+- **Menu Access**: Menu transaction - approval (`transaction/approval/spv/*`)
 - **CRUD**: All actions for transaction - approval (`*`)
 
 ### `spg`
-- **Menu Access**: Menu transaction (`transaction/*`)
+- **Menu Access**: Menu transaction (`transaction/management/*`)
 - **CRUD**: All actions for transaction (`*`)
 
 ## Implementation Details
