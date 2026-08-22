@@ -11,10 +11,10 @@ const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
 createInertiaApp({
     title: (title) => {
-        const dynamicAppName =
-            document
-                .querySelector('meta[name="app-name"]')
-                ?.getAttribute('content') || appName;
+        let dynamicAppName = appName;
+        if (typeof document !== 'undefined') {
+            dynamicAppName = document.querySelector('meta[name="app-name"]')?.getAttribute('content') || appName;
+        }
 
         return title ? `${title} - ${dynamicAppName}` : dynamicAppName;
     },
