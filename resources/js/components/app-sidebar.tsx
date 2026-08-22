@@ -69,7 +69,33 @@ export function AppSidebar() {
         });
     }
 
+    if (permissions.transaction) {
+        mainNavItems.push({
+            title: 'Transactions',
+            href: '/transactions',
+            icon: LayoutGrid, // You can change the icon later
+        });
+    }
 
+    if (permissions.supervisor) {
+        mainNavItems.push({
+            title: 'Transaction Approvals',
+            href: '/supervisor/transactions',
+            icon: LayoutGrid,
+        });
+    }
+
+    if (permissions.admin) {
+        mainNavItems.push({
+            title: 'Transaction Comparisons',
+            href: '#',
+            icon: LayoutGrid,
+            items: [
+                { title: 'Pending Comparisons', href: '/admin/transactions' },
+                { title: 'All History', href: '/admin/transactions/all' },
+            ],
+        });
+    }
 
     return (
         <Sidebar collapsible="icon" variant="inset">

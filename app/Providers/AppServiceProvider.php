@@ -8,6 +8,16 @@ use App\Domain\Outlet\Repositories\EloquentLinkedOutletUserRepository;
 use App\Domain\Outlet\Repositories\EloquentOutletRepository;
 use App\Domain\Outlet\Repositories\LinkedOutletUserRepositoryInterface;
 use App\Domain\Outlet\Repositories\OutletRepositoryInterface;
+use App\Domain\Transaction\Repositories\EloquentTransactionDailyIncomeRepository;
+use App\Domain\Transaction\Repositories\EloquentTransactionReplacementRealizationRepository;
+use App\Domain\Transaction\Repositories\EloquentTransactionRepository;
+use App\Domain\Transaction\Repositories\EloquentTransactionSystemIncomeRepository;
+use App\Domain\Transaction\Repositories\EloquentTransactionTransferProofRepository;
+use App\Domain\Transaction\Repositories\TransactionDailyIncomeRepositoryInterface;
+use App\Domain\Transaction\Repositories\TransactionReplacementRealizationRepositoryInterface;
+use App\Domain\Transaction\Repositories\TransactionRepositoryInterface;
+use App\Domain\Transaction\Repositories\TransactionSystemIncomeRepositoryInterface;
+use App\Domain\Transaction\Repositories\TransactionTransferProofRepositoryInterface;
 use App\Domain\UserAccess\Repositories\EloquentRoleRepository;
 use App\Domain\UserAccess\Repositories\EloquentUserRepository;
 use App\Domain\UserAccess\Repositories\RoleRepositoryInterface;
@@ -50,6 +60,31 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(
             ChairRepositoryInterface::class,
             EloquentChairRepository::class
+        );
+
+        $this->app->bind(
+            TransactionRepositoryInterface::class,
+            EloquentTransactionRepository::class
+        );
+
+        $this->app->bind(
+            TransactionDailyIncomeRepositoryInterface::class,
+            EloquentTransactionDailyIncomeRepository::class
+        );
+
+        $this->app->bind(
+            TransactionReplacementRealizationRepositoryInterface::class,
+            EloquentTransactionReplacementRealizationRepository::class
+        );
+
+        $this->app->bind(
+            TransactionTransferProofRepositoryInterface::class,
+            EloquentTransactionTransferProofRepository::class
+        );
+
+        $this->app->bind(
+            TransactionSystemIncomeRepositoryInterface::class,
+            EloquentTransactionSystemIncomeRepository::class
         );
     }
 
