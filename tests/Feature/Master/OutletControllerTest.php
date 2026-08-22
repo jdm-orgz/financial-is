@@ -113,9 +113,9 @@ class OutletControllerTest extends TestCase
         $this->assertDatabaseHas('outlets', [
             'name' => 'new_outlet_with_chairs',
         ]);
-        
+
         $outlet = Outlet::where('name', 'new_outlet_with_chairs')->first();
-        
+
         $this->assertDatabaseHas('chair_prefixes', [
             'outlet_id' => $outlet->id,
             'prefix' => 'NEWC',

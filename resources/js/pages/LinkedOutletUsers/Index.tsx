@@ -67,7 +67,7 @@ export default function Index({
     per_page,
     filters = {},
     roles = [],
-}: IndexProps) {
+}: Readonly<IndexProps>) {
     const [search, setSearch] = useState(filters.search || '');
     const [roleNames, setRoleNames] = useState<string[]>(filters.roles || []);
     const prevSearch = useRef(search);
@@ -88,6 +88,7 @@ export default function Index({
         }, 300);
 
         return () => clearTimeout(timeoutId);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [search, roleNames]);
 
     const handleSort = (field: string) => {

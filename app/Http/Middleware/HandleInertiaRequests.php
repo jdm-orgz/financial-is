@@ -51,7 +51,9 @@ class HandleInertiaRequests extends Middleware
                 'permissions' => [
                     'master' => $request->user() ? $request->user()->hasPermissionTo('master/*', '*') : false,
                     'configuration' => $request->user() ? $request->user()->hasPermissionTo('configuration/*', '*') : false,
-                    'transaction' => $request->user() ? $request->user()->hasPermissionTo('transaction/*', '*') : false,
+                    'transaction' => $request->user() ? $request->user()->hasPermissionTo('transaction/management/*', '*') : false,
+                    'supervisor' => $request->user() ? $request->user()->hasPermissionTo('transaction/approval/spv/*', '*') : false,
+                    'admin' => $request->user() ? $request->user()->hasPermissionTo('transaction/approval/admin/*', '*') : false,
                     'app_config' => $request->user() ? $request->user()->hasPermissionTo('app-config/*', '*') : false,
                 ],
             ],

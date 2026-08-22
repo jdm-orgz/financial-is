@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Master;
 
 use App\Domain\Settings\Models\Setting;
+use App\Enums\FileUploadModule;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -17,7 +18,7 @@ class AppConfigController extends Controller
         return inertia('Master/AppConfig/Edit', [
             'appName' => Setting::get('app_name', config('app.name')),
             'appLogo' => Setting::get('app_logo'),
-            'maxUploadSize' => \App\Enums\FileUploadModule::APP_CONFIG->maxSize(),
+            'maxUploadSize' => FileUploadModule::APP_CONFIG->maxSize(),
         ]);
     }
 
@@ -26,11 +27,11 @@ class AppConfigController extends Controller
      */
     public function update(Request $request)
     {
-        $maxSize = \App\Enums\FileUploadModule::APP_CONFIG->maxSize();
+        $maxSize = FileUploadModule::APP_CONFIG->maxSize();
 
         $validated = $request->validate([
             'app_name' => ['required', 'string', 'max:255'],
-            'app_logo' => ['nullable', 'image', 'max:' . $maxSize],
+            'app_logo' => ['nullable', 'image', 'max:'.$maxSize],
             'remove_logo' => ['nullable', 'boolean'],
         ]);
 
@@ -53,9 +54,9 @@ class AppConfigController extends Controller
             }
 
             $extension = $request->file('app_logo')->getClientOriginalExtension();
-            $fileName = now()->format('Y-m-d_H-i-s') . '_applogo.' . $extension;
+            $fileName = now()->format('Y-m-d_H-i-s').'_applogo.'.$extension;
             $path = $request->file('app_logo')->storeAs('app-logo', $fileName, 'public');
-            
+
             Setting::updateOrCreate(
                 ['key' => 'app_logo'],
                 ['value' => $path]
