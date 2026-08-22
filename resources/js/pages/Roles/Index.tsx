@@ -76,6 +76,7 @@ export default function Index({ roles, per_page, filters = {} }: IndexProps) {
         }, 300);
 
         return () => clearTimeout(timeoutId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [search]);
 
     const handleDelete = () => {

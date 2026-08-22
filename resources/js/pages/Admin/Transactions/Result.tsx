@@ -1,10 +1,8 @@
 import { Head, Link, useForm, router } from '@inertiajs/react';
 import { ChevronLeft, CheckCircle, XCircle } from 'lucide-react';
 import { useState } from 'react';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import {
     Dialog,
@@ -14,6 +12,7 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
 import {
     Table,
     TableBody,
@@ -22,6 +21,7 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import { Textarea } from '@/components/ui/textarea';
 import type { Transaction, VarianceItem } from '@/types/transaction';
 
 interface ResultProps {

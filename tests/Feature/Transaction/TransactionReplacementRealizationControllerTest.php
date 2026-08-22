@@ -7,8 +7,8 @@ use App\Domain\Outlet\Models\Outlet;
 use App\Domain\Transaction\Models\Transaction;
 use App\Domain\Transaction\Models\TransactionReplacementRealization;
 use App\Domain\UserAccess\Models\User;
-use App\Enums\TransactionStatus;
 use App\Enums\PaymentMethod;
+use App\Enums\TransactionStatus;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Crypt;
@@ -37,7 +37,7 @@ class TransactionReplacementRealizationControllerTest extends TestCase
 
     public function test_store_success()
     {
-        $response = $this->actingAs($this->user)->post('/transactions/' . Crypt::encryptString($this->transaction->id) . '/replacement-realizations', [
+        $response = $this->actingAs($this->user)->post('/transactions/'.Crypt::encryptString($this->transaction->id).'/replacement-realizations', [
             'problem_chair_id' => Crypt::encryptString($this->chair1->id),
             'replacement_chair_id' => Crypt::encryptString($this->chair2->id),
             'payment_method' => PaymentMethod::Cash->value,
@@ -65,15 +65,15 @@ class TransactionReplacementRealizationControllerTest extends TestCase
         ];
         $response = $this->actingAs($this->user)->post('/transactions/invalid/replacement-realizations', $payload);
         $response->assertStatus(404);
-        
-        $response = $this->actingAs($this->user)->post('/transactions/' . Crypt::encryptString(999) . '/replacement-realizations', $payload);
+
+        $response = $this->actingAs($this->user)->post('/transactions/'.Crypt::encryptString(999).'/replacement-realizations', $payload);
         $response->assertStatus(404);
     }
 
     public function test_store_invalid_status()
     {
         $this->transaction->update(['status' => TransactionStatus::Approval]);
-        $response = $this->actingAs($this->user)->post('/transactions/' . Crypt::encryptString($this->transaction->id) . '/replacement-realizations', []);
+        $response = $this->actingAs($this->user)->post('/transactions/'.Crypt::encryptString($this->transaction->id).'/replacement-realizations', []);
         $response->assertRedirect();
     }
 
@@ -88,7 +88,7 @@ class TransactionReplacementRealizationControllerTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->user)->put(
-            '/transactions/' . Crypt::encryptString($this->transaction->id) . '/replacement-realizations/' . Crypt::encryptString($realization->id),
+            '/transactions/'.Crypt::encryptString($this->transaction->id).'/replacement-realizations/'.Crypt::encryptString($realization->id),
             [
                 'problem_chair_id' => Crypt::encryptString($this->chair2->id),
                 'amount' => 100000,
@@ -110,7 +110,7 @@ class TransactionReplacementRealizationControllerTest extends TestCase
         $response = $this->actingAs($this->user)->put('/transactions/invalid/replacement-realizations/invalid', []);
         $response->assertStatus(404);
     }
-    
+
     public function test_destroy_success()
     {
         $realization = TransactionReplacementRealization::factory()->create([
@@ -118,7 +118,7 @@ class TransactionReplacementRealizationControllerTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->user)->delete(
-            '/transactions/' . Crypt::encryptString($this->transaction->id) . '/replacement-realizations/' . Crypt::encryptString($realization->id)
+            '/transactions/'.Crypt::encryptString($this->transaction->id).'/replacement-realizations/'.Crypt::encryptString($realization->id)
         );
 
         $response->assertRedirect();
@@ -133,7 +133,7 @@ class TransactionReplacementRealizationControllerTest extends TestCase
 
     public function test_store_invalid_chair_id()
     {
-        $response = $this->actingAs($this->user)->post('/transactions/' . \Illuminate\Support\Facades\Crypt::encryptString($this->transaction->id) . '/replacement-realizations', [
+        $response = $this->actingAs($this->user)->post('/transactions/'.Crypt::encryptString($this->transaction->id).'/replacement-realizations', [
             'problem_chair_id' => 'invalid-id',
             'replacement_chair_id' => 'invalid-id',
             'replacement_date' => '2026-08-01',

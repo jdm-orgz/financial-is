@@ -31,13 +31,13 @@ class TransactionDailyIncomeControllerTest extends TestCase
 
     public function test_upsert_success()
     {
-        $response = $this->actingAs($this->user)->post('/transactions/' . Crypt::encryptString($this->transaction->id) . '/daily-incomes', [
+        $response = $this->actingAs($this->user)->post('/transactions/'.Crypt::encryptString($this->transaction->id).'/daily-incomes', [
             'incomes' => [
                 [
                     'chair_id' => Crypt::encryptString($this->chair->id),
                     'amount' => 50000,
-                ]
-            ]
+                ],
+            ],
         ]);
 
         $response->assertRedirect();
@@ -55,32 +55,32 @@ class TransactionDailyIncomeControllerTest extends TestCase
                 [
                     'chair_id' => Crypt::encryptString($this->chair->id),
                     'amount' => 50000,
-                ]
-            ]
+                ],
+            ],
         ];
         $response = $this->actingAs($this->user)->post('/transactions/invalid/daily-incomes', $payload);
         $response->assertStatus(404);
-        
-        $response = $this->actingAs($this->user)->post('/transactions/' . Crypt::encryptString(999) . '/daily-incomes', $payload);
+
+        $response = $this->actingAs($this->user)->post('/transactions/'.Crypt::encryptString(999).'/daily-incomes', $payload);
         $response->assertStatus(404);
     }
 
     public function test_upsert_invalid_status()
     {
         $this->transaction->update(['status' => TransactionStatus::Approval]);
-        $response = $this->actingAs($this->user)->post('/transactions/' . Crypt::encryptString($this->transaction->id) . '/daily-incomes', []);
+        $response = $this->actingAs($this->user)->post('/transactions/'.Crypt::encryptString($this->transaction->id).'/daily-incomes', []);
         $response->assertRedirect();
     }
-    
+
     public function test_upsert_invalid_chair_id()
     {
-        $response = $this->actingAs($this->user)->post('/transactions/' . Crypt::encryptString($this->transaction->id) . '/daily-incomes', [
+        $response = $this->actingAs($this->user)->post('/transactions/'.Crypt::encryptString($this->transaction->id).'/daily-incomes', [
             'incomes' => [
                 [
                     'chair_id' => 'invalid-chair-id',
                     'amount' => 50000,
-                ]
-            ]
+                ],
+            ],
         ]);
         $response->assertStatus(404);
     }

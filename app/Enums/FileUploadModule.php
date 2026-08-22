@@ -13,6 +13,7 @@ enum FileUploadModule: string
     public function maxSize(): int
     {
         $specificSize = config("fileupload.modules.{$this->value}.max_size");
+
         return $specificSize ?? config('fileupload.default_max_size');
     }
 }

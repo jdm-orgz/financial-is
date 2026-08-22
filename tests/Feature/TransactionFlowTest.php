@@ -5,6 +5,7 @@ namespace Tests\Feature\Transaction;
 use App\Domain\Outlet\Models\Chair;
 use App\Domain\Outlet\Models\Outlet;
 use App\Domain\Transaction\Models\Transaction;
+use App\Domain\Transaction\Models\TransactionTransferProof;
 use App\Domain\UserAccess\Models\User;
 use App\Enums\TransactionStatus;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -18,7 +19,7 @@ class TransactionFlowTest extends TestCase
     public function test_spg_can_create_transaction_and_submit()
     {
         $this->withoutMiddleware();
-        
+
         $user = User::factory()->create();
 
         $outlet = Outlet::factory()->create();
@@ -34,19 +35,19 @@ class TransactionFlowTest extends TestCase
         ]);
 
         $response->assertSessionHasNoErrors();
-        
+
         $transaction = Transaction::first();
         $this->assertNotNull($transaction);
         $this->assertEquals(TransactionStatus::Draft, $transaction->status);
 
         // 2. Add Daily Incomes
-        $this->actingAs($user)->post("/transactions/" . Crypt::encryptString($transaction->id) . "/daily-incomes", [
+        $this->actingAs($user)->post('/transactions/'.Crypt::encryptString($transaction->id).'/daily-incomes', [
             'incomes' => [
                 [
                     'chair_id' => Crypt::encryptString($chair->id),
                     'amount' => 50000,
-                ]
-            ]
+                ],
+            ],
         ])->assertSessionHasNoErrors();
 
         $this->assertDatabaseHas('transaction_daily_incomes', [
@@ -56,12 +57,12 @@ class TransactionFlowTest extends TestCase
         ]);
 
         // 3. Upload Transfer Proof (Simulated by directly inserting for test simplicity, normally multipart)
-        \App\Domain\Transaction\Models\TransactionTransferProof::factory()->create([
-            'transaction_id' => $transaction->id
+        TransactionTransferProof::factory()->create([
+            'transaction_id' => $transaction->id,
         ]);
 
         // 4. Submit Transaction
-        $this->actingAs($user)->post("/transactions/" . Crypt::encryptString($transaction->id) . "/submit")
+        $this->actingAs($user)->post('/transactions/'.Crypt::encryptString($transaction->id).'/submit')
             ->assertSessionHasNoErrors();
 
         $this->assertEquals(TransactionStatus::Approval, $transaction->fresh()->status);

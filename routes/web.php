@@ -56,7 +56,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
     // SPG Transaction Routes
-    Route::middleware(['permission:transaction/*,*'])->group(function () {
+    Route::middleware(['permission:transaction/management/*,*'])->group(function () {
         Route::resource('transactions', TransactionController::class)->except(['edit', 'update']);
         Route::post('transactions/{transaction}/submit', [TransactionController::class, 'submit'])
             ->name('transactions.submit');
@@ -69,7 +69,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
     // Supervisor Transaction Routes
-    Route::middleware(['permission:supervisor/*,*'])->group(function () {
+    Route::middleware(['permission:transaction/approval/spv/*,*'])->group(function () {
         Route::get('supervisor/transactions', [SupervisorTransactionController::class, 'index'])
             ->name('supervisor.transactions.index');
         Route::get('supervisor/transactions/{transaction}', [SupervisorTransactionController::class, 'show'])
@@ -81,7 +81,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
     // Admin Transaction Routes
-    Route::middleware(['permission:admin/*,*'])->group(function () {
+    Route::middleware(['permission:transaction/approval/admin/*,*'])->group(function () {
         Route::get('admin/transactions', [AdminTransactionController::class, 'index'])
             ->name('admin.transactions.index');
         Route::get('admin/transactions/all', [AdminTransactionController::class, 'all'])

@@ -1,10 +1,8 @@
 import { Head, Link, useForm, router } from '@inertiajs/react';
 import { ChevronLeft, Plus, Trash2, Upload, Send } from 'lucide-react';
 import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import {
     Dialog,
@@ -14,6 +12,8 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
     Select,
     SelectContent,
@@ -37,8 +37,8 @@ interface Chair {
 }
 
 interface ShowProps {
-    transaction: Transaction;
-    chairs: Chair[];
+    readonly transaction: Transaction;
+    readonly chairs: Chair[];
 }
 
 const statusVariantMap: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
@@ -68,10 +68,10 @@ export default function Show({ transaction, chairs }: ShowProps) {
         setData: setDailyData, 
         post: postDaily, 
         processing: processingDaily,
-        errors: errorsDaily
     } = useForm({
         incomes: chairs.map(chair => {
-            const existing = transaction.daily_incomes.find(di => di.chair.id === chair.id);
+            const existing = transaction.daily_incomes.find(di => String(di.chair.id) === String(chair.id));
+
             return {
                 chair_id: chair.id,
                 amount: existing ? existing.amount : 0,
@@ -100,7 +100,6 @@ export default function Show({ transaction, chairs }: ShowProps) {
     // Transfer Proof Form
     const [isTransferOpen, setIsTransferOpen] = useState(false);
     const {
-        data: transferData,
         setData: setTransferData,
         post: postTransfer,
         processing: processingTransfer,
@@ -116,7 +115,7 @@ export default function Show({ transaction, chairs }: ShowProps) {
         });
     };
 
-    const handleAddRealization = (e: React.FormEvent) => {
+    const handleAddRealization = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         postReal(`/transactions/${transaction.id}/replacement-realizations`, {
             onSuccess: () => {
@@ -135,7 +134,7 @@ export default function Show({ transaction, chairs }: ShowProps) {
         }
     };
 
-    const handleUploadTransfer = (e: React.FormEvent) => {
+    const handleUploadTransfer = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         postTransfer(`/transactions/${transaction.id}/transfer-proofs`, {
             onSuccess: () => {
@@ -232,7 +231,7 @@ export default function Show({ transaction, chairs }: ShowProps) {
                                             value={dailyData.incomes[index].amount}
                                             onChange={(e) => {
                                                 const newIncomes = [...dailyData.incomes];
-                                                newIncomes[index].amount = parseInt(e.target.value) || 0;
+                                                newIncomes[index].amount = Number.parseInt(e.target.value) || 0;
                                                 setDailyData('incomes', newIncomes);
                                             }}
                                             disabled={!isEditable}
@@ -389,7 +388,7 @@ export default function Show({ transaction, chairs }: ShowProps) {
                             </div>
                             <div className="grid gap-2">
                                 <Label>Amount</Label>
-                                <Input type="number" step="1" min="1" value={realData.amount} onChange={(e) => setRealData('amount', parseInt(e.target.value) || 0)} />
+                                <Input type="number" step="1" min="1" value={realData.amount} onChange={(e) => setRealData('amount', Number.parseInt(e.target.value) || 0)} />
                                 {errorsReal.amount && <p className="text-xs text-destructive">{errorsReal.amount}</p>}
                             </div>
                             <div className="grid gap-2">

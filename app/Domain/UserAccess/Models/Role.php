@@ -15,9 +15,9 @@ class Role extends Model
     public const AVAILABLE_PERMISSIONS = [
         'master/*' => 'Master Data',
         'configuration/*' => 'Configuration',
-        'transaction/approval/spv*' => 'Transaction Approval (SPV)',
-        'transaction/approval/admin*' => 'Transaction Approval (Admin)',
-        'transaction/*' => 'Transaction Management',
+        'transaction/approval/spv/*' => 'Transaction Approval (SPV)',
+        'transaction/approval/admin/*' => 'Transaction Approval (Admin)',
+        'transaction/management/*' => 'Transaction Management',
     ];
 
     /** @use HasFactory<RoleFactory> */

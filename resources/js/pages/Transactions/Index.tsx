@@ -72,6 +72,7 @@ export default function Index({
         if (search === prevSearch.current) {
             return;
         }
+
         prevSearch.current = search;
         const timeoutId = setTimeout(() => {
             router.get(
@@ -80,7 +81,9 @@ export default function Index({
                 { preserveState: true, preserveScroll: true, replace: true },
             );
         }, 300);
+
         return () => clearTimeout(timeoutId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [search]);
 
     const handleDelete = () => {

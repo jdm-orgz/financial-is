@@ -66,7 +66,7 @@ class TransactionControllerTest extends TestCase
     public function test_show()
     {
         $transaction = Transaction::factory()->create(['created_by' => $this->user->id, 'outlet_id' => $this->outlet->id]);
-        $response = $this->actingAs($this->user)->get('/transactions/' . Crypt::encryptString($transaction->id));
+        $response = $this->actingAs($this->user)->get('/transactions/'.Crypt::encryptString($transaction->id));
         $response->assertStatus(200);
     }
 
@@ -74,15 +74,15 @@ class TransactionControllerTest extends TestCase
     {
         $response = $this->actingAs($this->user)->get('/transactions/invalid');
         $response->assertStatus(404);
-        
-        $response = $this->actingAs($this->user)->get('/transactions/' . Crypt::encryptString(9999));
+
+        $response = $this->actingAs($this->user)->get('/transactions/'.Crypt::encryptString(9999));
         $response->assertStatus(404);
     }
 
     public function test_submit_invalid_status()
     {
         $transaction = Transaction::factory()->create(['created_by' => $this->user->id, 'outlet_id' => $this->outlet->id, 'status' => TransactionStatus::Approval]);
-        $response = $this->actingAs($this->user)->post('/transactions/' . Crypt::encryptString($transaction->id) . '/submit');
+        $response = $this->actingAs($this->user)->post('/transactions/'.Crypt::encryptString($transaction->id).'/submit');
         $response->assertRedirect();
         $this->assertEquals(TransactionStatus::Approval, $transaction->fresh()->status);
     }
@@ -90,7 +90,7 @@ class TransactionControllerTest extends TestCase
     public function test_submit_missing_chairs()
     {
         $transaction = Transaction::factory()->create(['created_by' => $this->user->id, 'outlet_id' => $this->outlet->id, 'status' => TransactionStatus::Draft]);
-        $response = $this->actingAs($this->user)->post('/transactions/' . Crypt::encryptString($transaction->id) . '/submit');
+        $response = $this->actingAs($this->user)->post('/transactions/'.Crypt::encryptString($transaction->id).'/submit');
         $response->assertRedirect();
         $this->assertEquals(TransactionStatus::Draft, $transaction->fresh()->status);
     }
@@ -99,8 +99,8 @@ class TransactionControllerTest extends TestCase
     {
         $transaction = Transaction::factory()->create(['created_by' => $this->user->id, 'outlet_id' => $this->outlet->id, 'status' => TransactionStatus::Draft]);
         TransactionDailyIncome::factory()->create(['transaction_id' => $transaction->id, 'chair_id' => $this->chair->id]);
-        
-        $response = $this->actingAs($this->user)->post('/transactions/' . Crypt::encryptString($transaction->id) . '/submit');
+
+        $response = $this->actingAs($this->user)->post('/transactions/'.Crypt::encryptString($transaction->id).'/submit');
         $response->assertRedirect();
         $this->assertEquals(TransactionStatus::Draft, $transaction->fresh()->status);
     }
@@ -110,12 +110,12 @@ class TransactionControllerTest extends TestCase
         $transaction = Transaction::factory()->create(['created_by' => $this->user->id, 'outlet_id' => $this->outlet->id, 'status' => TransactionStatus::Draft]);
         TransactionDailyIncome::factory()->create(['transaction_id' => $transaction->id, 'chair_id' => $this->chair->id]);
         TransactionTransferProof::factory()->create(['transaction_id' => $transaction->id]);
-        
-        $response = $this->actingAs($this->user)->post('/transactions/' . Crypt::encryptString($transaction->id) . '/submit');
+
+        $response = $this->actingAs($this->user)->post('/transactions/'.Crypt::encryptString($transaction->id).'/submit');
         $response->assertRedirect('/transactions');
         $this->assertEquals(TransactionStatus::Approval, $transaction->fresh()->status);
     }
-    
+
     public function test_submit_invalid_id()
     {
         $response = $this->actingAs($this->user)->post('/transactions/invalid/submit');
@@ -125,7 +125,7 @@ class TransactionControllerTest extends TestCase
     public function test_destroy_invalid_status()
     {
         $transaction = Transaction::factory()->create(['created_by' => $this->user->id, 'outlet_id' => $this->outlet->id, 'status' => TransactionStatus::Approval]);
-        $response = $this->actingAs($this->user)->delete('/transactions/' . Crypt::encryptString($transaction->id));
+        $response = $this->actingAs($this->user)->delete('/transactions/'.Crypt::encryptString($transaction->id));
         $response->assertRedirect();
         $this->assertDatabaseHas('transactions', ['id' => $transaction->id]);
     }
@@ -133,11 +133,11 @@ class TransactionControllerTest extends TestCase
     public function test_destroy_success()
     {
         $transaction = Transaction::factory()->create(['created_by' => $this->user->id, 'outlet_id' => $this->outlet->id, 'status' => TransactionStatus::Draft]);
-        $response = $this->actingAs($this->user)->delete('/transactions/' . Crypt::encryptString($transaction->id));
+        $response = $this->actingAs($this->user)->delete('/transactions/'.Crypt::encryptString($transaction->id));
         $response->assertRedirect('/transactions');
         $this->assertSoftDeleted('transactions', ['id' => $transaction->id]);
     }
-    
+
     public function test_destroy_invalid_id()
     {
         $response = $this->actingAs($this->user)->delete('/transactions/invalid');

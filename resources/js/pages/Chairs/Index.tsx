@@ -107,6 +107,7 @@ export default function Index({
         }, 300);
 
         return () => clearTimeout(timeoutId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [search]);
 
     const handleDelete = () => {

@@ -30,7 +30,7 @@ class TransactionTransferProofControllerTest extends TestCase
 
     public function test_store_success()
     {
-        $response = $this->actingAs($this->user)->post('/transactions/' . Crypt::encryptString($this->transaction->id) . '/transfer-proofs', [
+        $response = $this->actingAs($this->user)->post('/transactions/'.Crypt::encryptString($this->transaction->id).'/transfer-proofs', [
             'proof_image' => UploadedFile::fake()->image('proof.jpg'),
         ]);
 
@@ -39,7 +39,7 @@ class TransactionTransferProofControllerTest extends TestCase
             'transaction_id' => $this->transaction->id,
         ]);
     }
-    
+
     public function test_store_invalid_transaction()
     {
         $response = $this->actingAs($this->user)->post('/transactions/invalid/transfer-proofs', [
@@ -55,7 +55,7 @@ class TransactionTransferProofControllerTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->user)->delete(
-            '/transactions/' . Crypt::encryptString($this->transaction->id) . '/transfer-proofs/' . Crypt::encryptString($proof->id)
+            '/transactions/'.Crypt::encryptString($this->transaction->id).'/transfer-proofs/'.Crypt::encryptString($proof->id)
         );
 
         $response->assertRedirect();

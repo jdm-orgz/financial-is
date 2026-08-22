@@ -1,9 +1,9 @@
 import { Head, Link, useForm } from '@inertiajs/react';
 import { ChevronLeft, Save } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import type { Transaction } from '@/types/transaction';
 
 interface Chair {

@@ -1,5 +1,6 @@
 import { Head, Link, router } from '@inertiajs/react';
 import { Eye } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
 import type { PaginationLink } from '@/components/pagination';
 import { Pagination } from '@/components/pagination';
 import { Badge } from '@/components/ui/badge';
@@ -21,7 +22,6 @@ import {
     TableRow,
 } from '@/components/ui/table';
 import type { Transaction, StatusOption } from '@/types/transaction';
-import { useState, useEffect, useRef } from 'react';
 
 const statusVariantMap: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
     draft: 'secondary',
@@ -70,6 +70,7 @@ export default function All({
         if (search === prevSearch.current) {
             return;
         }
+
         prevSearch.current = search;
         const timeoutId = setTimeout(() => {
             router.get(
@@ -78,7 +79,9 @@ export default function All({
                 { preserveState: true, preserveScroll: true, replace: true },
             );
         }, 300);
+
         return () => clearTimeout(timeoutId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [search]);
 
     const handleStatusFilter = (value: string) => {

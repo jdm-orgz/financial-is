@@ -26,7 +26,7 @@ class TransactionCoverageTest extends TestCase
     public function test_model_relations()
     {
         $transaction = Transaction::factory()->create();
-        
+
         $dailyIncome = TransactionDailyIncome::factory()->create(['transaction_id' => $transaction->id]);
         $this->assertInstanceOf(Transaction::class, $dailyIncome->transaction);
         $this->assertNotNull($dailyIncome->chair);
@@ -44,25 +44,25 @@ class TransactionCoverageTest extends TestCase
 
     public function test_calculate_variance_unknown_chair()
     {
-        $action = new CalculateVarianceAction();
+        $action = new CalculateVarianceAction;
         $transaction = Transaction::factory()->create();
         $systemIncome = new TransactionSystemIncome(['amount' => 100]);
         $transaction->setRelation('systemIncomes', collect([$systemIncome]));
-        
+
         $result = $action->execute($transaction);
         $this->assertEquals('Unknown', $result[0]['chair_name']);
     }
 
     public function test_transaction_repository()
     {
-        $repo = new EloquentTransactionRepository();
+        $repo = new EloquentTransactionRepository;
         $user = User::factory()->create();
         $outlet = Outlet::factory()->create(['name' => 'Test Outlet']);
         $transaction = Transaction::factory()->create(['created_by' => $user->id, 'outlet_id' => $outlet->id, 'status' => TransactionStatus::Draft]);
 
         // getPaginatedForSpg
         $repo->getPaginatedForSpg($user->id, 10, 'Test', TransactionStatus::Draft->value);
-        
+
         // getPaginatedForSupervisor
         $repo->getPaginatedForSupervisor($user->id, 10, TransactionStatus::Draft->value);
 
@@ -82,22 +82,22 @@ class TransactionCoverageTest extends TestCase
 
     public function test_other_repositories()
     {
-        $dailyRepo = new EloquentTransactionDailyIncomeRepository();
+        $dailyRepo = new EloquentTransactionDailyIncomeRepository;
         $dailyRepo->upsertForTransaction('invalid-id', []);
         $dailyRepo->deleteByTransactionId('invalid-id');
         $dailyRepo->findByTransactionId('invalid-id');
 
-        $realizationRepo = new EloquentTransactionReplacementRealizationRepository();
+        $realizationRepo = new EloquentTransactionReplacementRealizationRepository;
         $this->assertNull($realizationRepo->findById('invalid-id'));
         $this->assertFalse($realizationRepo->update('invalid-id', []));
         $this->assertFalse($realizationRepo->delete('invalid-id'));
         $realizationRepo->findByTransactionId('invalid-id');
 
-        $systemRepo = new EloquentTransactionSystemIncomeRepository();
+        $systemRepo = new EloquentTransactionSystemIncomeRepository;
         $systemRepo->upsertForTransaction('invalid-id', []);
         $systemRepo->findByTransactionId('invalid-id');
 
-        $transferRepo = new EloquentTransactionTransferProofRepository();
+        $transferRepo = new EloquentTransactionTransferProofRepository;
         $this->assertNull($transferRepo->findById('invalid-id'));
         $this->assertFalse($transferRepo->delete('invalid-id'));
         $transferRepo->findByTransactionId('invalid-id');

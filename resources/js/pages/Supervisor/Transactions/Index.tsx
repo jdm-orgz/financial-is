@@ -1,10 +1,10 @@
 import { Head, Link, router } from '@inertiajs/react';
 import { Eye } from 'lucide-react';
-import { useState, useEffect, useRef } from 'react';
 import type { PaginationLink } from '@/components/pagination';
 import { Pagination } from '@/components/pagination';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
     Select,
     SelectContent,
@@ -49,6 +49,7 @@ interface IndexProps {
     };
     filters: {
         status?: string;
+        search?: string;
     };
     per_page: number;
 }

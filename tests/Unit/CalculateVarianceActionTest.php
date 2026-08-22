@@ -62,7 +62,7 @@ class CalculateVarianceActionTest extends TestCase
             'amount' => 10000,
         ]);
 
-        $action = new CalculateVarianceAction();
+        $action = new CalculateVarianceAction;
         $result = $action->execute($transaction);
 
         // Expected Chair 1:
@@ -81,7 +81,7 @@ class CalculateVarianceActionTest extends TestCase
 
         $this->assertCount(2, $result);
         $chair1Result = collect($result)->firstWhere('chair_id', $chair1->id);
-        
+
         $this->assertEquals(60000, $chair1Result['system_amount']);
         $this->assertEquals(10000, $chair1Result['replacement_total']);
         $this->assertEquals(50000, $chair1Result['system_adjusted']);

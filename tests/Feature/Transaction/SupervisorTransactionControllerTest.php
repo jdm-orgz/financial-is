@@ -21,7 +21,7 @@ class SupervisorTransactionControllerTest extends TestCase
         $this->supervisor = User::factory()->create();
         $this->outlet = Outlet::factory()->create();
         $this->supervisor->outlets()->attach($this->outlet->id, ['is_active' => '1', 'created_by' => $this->supervisor->id]);
-        
+
         $this->transaction = Transaction::factory()->create([
             'outlet_id' => $this->outlet->id,
             'status' => TransactionStatus::Approval,
@@ -36,7 +36,7 @@ class SupervisorTransactionControllerTest extends TestCase
 
     public function test_show()
     {
-        $response = $this->actingAs($this->supervisor)->get('/supervisor/transactions/' . Crypt::encryptString($this->transaction->id));
+        $response = $this->actingAs($this->supervisor)->get('/supervisor/transactions/'.Crypt::encryptString($this->transaction->id));
         $response->assertStatus(200);
     }
 
@@ -44,8 +44,8 @@ class SupervisorTransactionControllerTest extends TestCase
     {
         $otherOutlet = Outlet::factory()->create();
         $otherTransaction = Transaction::factory()->create(['outlet_id' => $otherOutlet->id]);
-        
-        $response = $this->actingAs($this->supervisor)->get('/supervisor/transactions/' . Crypt::encryptString($otherTransaction->id));
+
+        $response = $this->actingAs($this->supervisor)->get('/supervisor/transactions/'.Crypt::encryptString($otherTransaction->id));
         $response->assertStatus(403);
     }
 
@@ -53,26 +53,26 @@ class SupervisorTransactionControllerTest extends TestCase
     {
         $response = $this->actingAs($this->supervisor)->get('/supervisor/transactions/invalid');
         $response->assertStatus(404);
-        
-        $response = $this->actingAs($this->supervisor)->get('/supervisor/transactions/' . Crypt::encryptString(999));
+
+        $response = $this->actingAs($this->supervisor)->get('/supervisor/transactions/'.Crypt::encryptString(999));
         $response->assertStatus(404);
     }
 
     public function test_approve_success()
     {
-        $response = $this->actingAs($this->supervisor)->post('/supervisor/transactions/' . Crypt::encryptString($this->transaction->id) . '/approve');
+        $response = $this->actingAs($this->supervisor)->post('/supervisor/transactions/'.Crypt::encryptString($this->transaction->id).'/approve');
         $response->assertRedirect('/supervisor/transactions');
         $this->assertEquals(TransactionStatus::Comparing, $this->transaction->fresh()->status);
     }
-    
+
     public function test_approve_invalid_status()
     {
         $this->transaction->update(['status' => TransactionStatus::Draft]);
-        $response = $this->actingAs($this->supervisor)->post('/supervisor/transactions/' . Crypt::encryptString($this->transaction->id) . '/approve');
+        $response = $this->actingAs($this->supervisor)->post('/supervisor/transactions/'.Crypt::encryptString($this->transaction->id).'/approve');
         $response->assertRedirect();
         $this->assertEquals(TransactionStatus::Draft, $this->transaction->fresh()->status);
     }
-    
+
     public function test_approve_invalid_id()
     {
         $response = $this->actingAs($this->supervisor)->post('/supervisor/transactions/invalid/approve');
@@ -81,7 +81,7 @@ class SupervisorTransactionControllerTest extends TestCase
 
     public function test_reject_success()
     {
-        $response = $this->actingAs($this->supervisor)->post('/supervisor/transactions/' . Crypt::encryptString($this->transaction->id) . '/reject', [
+        $response = $this->actingAs($this->supervisor)->post('/supervisor/transactions/'.Crypt::encryptString($this->transaction->id).'/reject', [
             'supervisor_notes' => 'Needs fixing',
         ]);
         $response->assertRedirect('/supervisor/transactions');
@@ -92,13 +92,13 @@ class SupervisorTransactionControllerTest extends TestCase
     public function test_reject_invalid_status()
     {
         $this->transaction->update(['status' => TransactionStatus::Draft]);
-        $response = $this->actingAs($this->supervisor)->post('/supervisor/transactions/' . Crypt::encryptString($this->transaction->id) . '/reject', [
+        $response = $this->actingAs($this->supervisor)->post('/supervisor/transactions/'.Crypt::encryptString($this->transaction->id).'/reject', [
             'supervisor_notes' => 'Needs fixing',
         ]);
         $response->assertRedirect();
         $this->assertEquals(TransactionStatus::Draft, $this->transaction->fresh()->status);
     }
-    
+
     public function test_reject_invalid_id()
     {
         $response = $this->actingAs($this->supervisor)->post('/supervisor/transactions/invalid/reject', [

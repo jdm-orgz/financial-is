@@ -59,7 +59,7 @@ class EnumOptionsTest extends TestCase
             [
                 'label' => 'Inactive Status',
                 'value' => 'inactive',
-            ]
+            ],
         ], DummyEnum::options());
     }
 
@@ -73,7 +73,7 @@ class EnumOptionsTest extends TestCase
             [
                 'label' => 'T W O',
                 'value' => 2,
-            ]
+            ],
         ], DummyEnumNoLabel::options());
     }
 }

@@ -4,6 +4,7 @@ namespace Tests\Feature\Master;
 
 use App\Domain\Outlet\Models\Chair;
 use App\Domain\Outlet\Models\Outlet;
+use App\Domain\Outlet\Repositories\EloquentChairRepository;
 use App\Domain\UserAccess\Models\Role;
 use App\Domain\UserAccess\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -123,7 +124,7 @@ class ChairControllerTest extends TestCase
             'outlet_id' => $this->outlet->id,
         ]);
 
-        $this->assertInstanceOf(\App\Domain\Outlet\Models\Outlet::class, $chairPrefix->outlet);
+        $this->assertInstanceOf(Outlet::class, $chairPrefix->outlet);
     }
 
     public function test_abort_404_when_storing_chair_for_invalid_encrypted_outlet_id(): void
@@ -172,7 +173,7 @@ class ChairControllerTest extends TestCase
         ]);
 
         $response->assertRedirect();
-        
+
         $this->assertDatabaseCount('chairs', 1);
         $chair = Chair::first();
         $this->assertStringStartsWith('Chair ', $chair->name);
@@ -286,8 +287,8 @@ class ChairControllerTest extends TestCase
             'id' => $chair->id,
             'is_active' => '0',
         ]);
-        
-        $this->assertInstanceOf(\App\Domain\Outlet\Models\Outlet::class, $chair->outlet);
+
+        $this->assertInstanceOf(Outlet::class, $chair->outlet);
     }
 
     public function test_abort_404_when_updating_status_of_invalid_encrypted_chair_id(): void
@@ -307,13 +308,13 @@ class ChairControllerTest extends TestCase
 
     public function test_chair_repository_update_returns_false_for_non_existent_chair(): void
     {
-        $repository = new \App\Domain\Outlet\Repositories\EloquentChairRepository();
+        $repository = new EloquentChairRepository;
         $this->assertFalse($repository->update('99999', ['name' => 'updated']));
     }
 
     public function test_chair_repository_delete_returns_false_for_non_existent_chair(): void
     {
-        $repository = new \App\Domain\Outlet\Repositories\EloquentChairRepository();
+        $repository = new EloquentChairRepository;
         $this->assertFalse($repository->delete('99999'));
     }
 

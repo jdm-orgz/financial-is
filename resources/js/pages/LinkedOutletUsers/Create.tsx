@@ -125,14 +125,17 @@ export default function Create({
                                     <Command
                                         filter={(value, search) => {
                                             const searchable = value.split('___')[0];
+
                                             if (
                                                 searchable
                                                     .toLowerCase()
                                                     .includes(
                                                         search.toLowerCase(),
                                                     )
-                                            )
-                                                return 1;
+                                            ) {
+return 1;
+}
+
                                             return 0;
                                         }}
                                     >

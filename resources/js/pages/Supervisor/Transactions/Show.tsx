@@ -1,11 +1,8 @@
 import { Head, Link, useForm, router } from '@inertiajs/react';
 import { ChevronLeft, CheckCircle, XCircle } from 'lucide-react';
-import { useState } from 'react';
+import { useState, type ChangeEvent } from 'react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
     Dialog,
     DialogContent,
@@ -14,6 +11,7 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
 import {
     Table,
     TableBody,
@@ -22,14 +20,14 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import { Textarea } from '@/components/ui/textarea';
 import type { Transaction } from '@/types/transaction';
 
 interface ShowProps {
-    transaction: Transaction;
+    readonly transaction: Transaction;
 }
 
 export default function Show({ transaction }: ShowProps) {
-    const isApproval = transaction.status === 'approval';
     const [isRejectOpen, setIsRejectOpen] = useState(false);
 
     const {
@@ -75,7 +73,7 @@ export default function Show({ transaction }: ShowProps) {
                                 <ChevronLeft className="mr-2 h-4 w-4" /> Back
                             </Link>
                         </Button>
-                        {isPending && (
+                        {transaction.status === 'approval' && (
                             <>
                                 <Button variant="destructive" onClick={() => setIsRejectOpen(true)}>
                                     <XCircle className="mr-2 h-4 w-4" /> Reject (Correction)
@@ -201,7 +199,7 @@ export default function Show({ transaction }: ShowProps) {
                                 <Textarea 
                                     id="supervisor_notes" 
                                     value={rejectData.supervisor_notes} 
-                                    onChange={(e) => setRejectData('supervisor_notes', e.target.value)}
+                                    onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setRejectData('supervisor_notes', e.target.value)}
                                     placeholder="Example: The amount on chair A1 is incorrect."
                                     rows={4}
                                 />
