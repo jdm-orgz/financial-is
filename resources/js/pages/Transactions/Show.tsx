@@ -70,11 +70,11 @@ export default function Show({ transaction, chairs }: ShowProps) {
         processing: processingDaily,
     } = useForm({
         incomes: chairs.map(chair => {
-            const existing = transaction.daily_incomes.find(di => String(di.chair.id) === String(chair.id));
+            const existing = transaction.daily_incomes.find(di => di.chair?.name === chair.name);
 
             return {
                 chair_id: chair.id,
-                amount: existing ? existing.amount : 0,
+                amount: existing ? Number(existing.amount) : 0,
             };
         }),
     });
@@ -228,10 +228,11 @@ export default function Show({ transaction, chairs }: ShowProps) {
                                         <Label>{chair.name}</Label>
                                         <Input 
                                             type="number" 
-                                            value={dailyData.incomes[index].amount}
+                                            value={dailyData.incomes[index].amount.toString()}
                                             onChange={(e) => {
                                                 const newIncomes = [...dailyData.incomes];
-                                                newIncomes[index].amount = Number.parseInt(e.target.value) || 0;
+                                                const val = e.target.value;
+                                                newIncomes[index].amount = val === '' ? 0 : Number(val);
                                                 setDailyData('incomes', newIncomes);
                                             }}
                                             disabled={!isEditable}
@@ -388,7 +389,7 @@ export default function Show({ transaction, chairs }: ShowProps) {
                             </div>
                             <div className="grid gap-2">
                                 <Label>Amount</Label>
-                                <Input type="number" step="1" min="1" value={realData.amount} onChange={(e) => setRealData('amount', Number.parseInt(e.target.value) || 0)} />
+                                <Input type="number" step="1" min="1" value={realData.amount.toString()} onChange={(e) => setRealData('amount', e.target.value === '' ? 0 : Number(e.target.value))} />
                                 {errorsReal.amount && <p className="text-xs text-destructive">{errorsReal.amount}</p>}
                             </div>
                             <div className="grid gap-2">
