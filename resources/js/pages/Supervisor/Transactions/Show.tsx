@@ -104,13 +104,13 @@ export default function Show({ transaction }: ShowProps) {
                                     {transaction.daily_incomes.map((di) => (
                                         <TableRow key={di.id}>
                                             <TableCell>{di.chair.name}</TableCell>
-                                            <TableCell className="text-right">Rp {di.amount.toLocaleString('id-ID')}</TableCell>
+                                            <TableCell className="text-right">Rp {Number(di.amount).toLocaleString('id-ID')}</TableCell>
                                         </TableRow>
                                     ))}
                                     <TableRow className="font-bold">
                                         <TableCell>Total Income</TableCell>
                                         <TableCell className="text-right">
-                                            Rp {transaction.daily_incomes.reduce((sum, di) => sum + di.amount, 0).toLocaleString('id-ID')}
+                                            Rp {transaction.daily_incomes.reduce((sum, di) => sum + Number(di.amount), 0).toLocaleString('id-ID')}
                                         </TableCell>
                                     </TableRow>
                                 </TableBody>
