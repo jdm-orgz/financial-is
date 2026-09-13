@@ -27,6 +27,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 
@@ -88,11 +89,19 @@ class AppServiceProvider extends ServiceProvider
         );
     }
 
-    /**
-     * Bootstrap any application services.
-     */
     public function boot(): void
     {
+        if (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https') {
+            URL::forceScheme('https');
+        } elseif (app()->environment('production')) {
+            URL::forceScheme('https');
+        }
+
+        // Also force it if the host contains ngrok to be safe
+        if (request()->getHost() && str_contains(request()->getHost(), 'ngrok')) {
+            URL::forceScheme('https');
+        }
+
         Event::subscribe(AuthEventSubscriber::class);
         $this->configureDefaults();
     }
