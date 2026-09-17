@@ -1,5 +1,5 @@
 import { Head, Link, router } from '@inertiajs/react';
-import { Eye, Scale } from 'lucide-react';
+import { Eye, Pencil } from 'lucide-react';
 import type { PaginationLink } from '@/components/pagination';
 import { Pagination } from '@/components/pagination';
 import { Badge } from '@/components/ui/badge';
@@ -21,6 +21,7 @@ import {
     TableRow,
 } from '@/components/ui/table';
 import type { Transaction } from '@/types/transaction';
+import { useState, useEffect } from 'react';
 
 interface IndexProps {
     transactions: {
@@ -31,16 +32,39 @@ interface IndexProps {
         total: number;
     };
     filters: {
+        search?: string;
         status?: string;
     };
     per_page: number;
+    statusOptions: { label: string; value: string }[];
 }
 
 export default function Index({
     transactions,
     filters = {},
     per_page,
+    statusOptions,
 }: IndexProps) {
+    const [search, setSearch] = useState(filters.search || '');
+    const [debouncedSearch, setDebouncedSearch] = useState(search);
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setDebouncedSearch(search);
+        }, 500);
+        return () => clearTimeout(timer);
+    }, [search]);
+
+    useEffect(() => {
+        if (debouncedSearch !== filters.search) {
+            router.get(
+                window.location.pathname,
+                { ...filters, search: debouncedSearch, per_page },
+                { preserveState: true, preserveScroll: true },
+            );
+        }
+    }, [debouncedSearch, filters, per_page]);
+
     const handleStatusFilter = (value: string) => {
         router.get(
             window.location.pathname,
@@ -49,19 +73,44 @@ export default function Index({
         );
     };
 
+    const getStatusBadgeVariant = (status: string) => {
+        switch (status) {
+            case 'draft':
+                return 'secondary';
+            case 'approval':
+                return 'outline';
+            case 'correction':
+                return 'destructive';
+            case 'comparing':
+                return 'secondary';
+            case 'compared':
+                return 'default';
+            case 'done':
+                return 'default';
+            default:
+                return 'outline';
+        }
+    };
+
+    const getStatusLabel = (status: string) => {
+        return statusOptions.find(opt => opt.value === status)?.label || status;
+    };
+
     return (
         <>
-            <Head title="Pending Comparisons (Admin)" />
+            <Head title="Transactions (Admin)" />
             <div className="flex h-full flex-1 flex-col gap-4 p-4">
                 <div className="flex items-center justify-between">
-                    <h1 className="text-2xl font-bold">Pending Comparisons</h1>
+                    <h1 className="text-2xl font-bold">Transactions</h1>
                     <div className="flex items-center gap-4">
                         <Input
                             type="search"
                             placeholder="Search outlet..."
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
                         />
                         <Select
-                            value={filters.status || 'comparing'}
+                            value={filters.status || 'all'}
                             onValueChange={handleStatusFilter}
                         >
                             <SelectTrigger className="w-64">
@@ -69,8 +118,11 @@ export default function Index({
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="all">All Status</SelectItem>
-                                <SelectItem value="comparing">Comparison Process</SelectItem>
-                                <SelectItem value="compared">Already Compared</SelectItem>
+                                {statusOptions.map((opt) => (
+                                    <SelectItem key={opt.value} value={opt.value}>
+                                        {opt.label}
+                                    </SelectItem>
+                                ))}
                             </SelectContent>
                         </Select>
                     </div>
@@ -103,22 +155,26 @@ export default function Index({
                                         <TableCell>{tx.created_by.name}</TableCell>
                                         <TableCell>{tx.date}</TableCell>
                                         <TableCell>
-                                            <Badge variant={tx.status === 'comparing' ? 'outline' : 'default'}>
-                                                {tx.status === 'comparing' ? 'Comparison Process' : 'Ready to Review'}
+                                            <Badge variant={getStatusBadgeVariant(tx.status)}>
+                                                {getStatusLabel(tx.status)}
                                             </Badge>
                                         </TableCell>
                                         <TableCell className="text-right">
-                                            <Button variant="ghost" size="icon" asChild>
-                                                {tx.status === 'comparing' ? (
-                                                    <Link href={`/admin/transactions/${tx.id}/compare`} title="Input System Data">
-                                                        <Scale className="h-4 w-4" />
-                                                    </Link>
-                                                ) : (
-                                                    <Link href={`/admin/transactions/${tx.id}/result`} title="View Results">
-                                                        <Eye className="h-4 w-4 text-green-600" />
-                                                    </Link>
-                                                )}
-                                            </Button>
+                                            {tx.status === 'comparing' || tx.status === 'compared' || tx.status === 'done' ? (
+                                                <Button variant="ghost" size="icon" asChild>
+                                                    {tx.status === 'comparing' ? (
+                                                        <Link href={`/admin/transactions/${tx.id}/compare`} title="Input System Data">
+                                                            <Pencil className="h-4 w-4 text-orange-600" />
+                                                        </Link>
+                                                    ) : (
+                                                        <Link href={`/admin/transactions/${tx.id}/result`} title="View Results">
+                                                            <Eye className="h-4 w-4 text-white" />
+                                                        </Link>
+                                                    )}
+                                                </Button>
+                                            ) : (
+                                                <span className="text-sm text-muted-foreground font-medium">Incomplete</span>
+                                            )}
                                         </TableCell>
                                     </TableRow>
                                 ))
@@ -168,6 +224,6 @@ export default function Index({
 Index.layout = {
     breadcrumbs: [
         { title: 'Admin', href: '#' },
-        { title: 'Pending Comparisons', href: '/admin/transactions' },
+        { title: 'Transactions', href: '/admin/transactions' },
     ],
 };

@@ -1,5 +1,5 @@
 import { Head, Link, router } from '@inertiajs/react';
-import { Plus, Eye, Trash2, ArrowUpDown, ArrowDown, ArrowUp } from 'lucide-react';
+import { Plus, Eye, Pencil, Trash2, ArrowUpDown, ArrowDown, ArrowUp } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { DeleteModal } from '@/components/delete-modal';
 import type { PaginationLink } from '@/components/pagination';
@@ -229,7 +229,11 @@ export default function Index({
                                             <div className="flex items-center justify-end gap-2">
                                                 <Button variant="ghost" size="icon" asChild>
                                                     <Link href={`/transactions/${tx.id}`}>
-                                                        <Eye className="h-4 w-4" />
+                                                        {tx.status === 'draft' || tx.status === 'correction' ? (
+                                                            <Pencil className="h-4 w-4 text-orange-600" />
+                                                        ) : (
+                                                            <Eye className="h-4 w-4" />
+                                                        )}
                                                     </Link>
                                                 </Button>
                                                 {tx.status === 'draft' && (

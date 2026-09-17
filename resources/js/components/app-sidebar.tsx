@@ -87,13 +87,9 @@ export function AppSidebar() {
 
     if (permissions.admin) {
         mainNavItems.push({
-            title: 'Transaction Comparisons',
-            href: '#',
+            title: 'Transactions',
+            href: '/admin/transactions',
             icon: LayoutGrid,
-            items: [
-                { title: 'Pending Comparisons', href: '/admin/transactions' },
-                { title: 'All History', href: '/admin/transactions/all' },
-            ],
         });
     }
 

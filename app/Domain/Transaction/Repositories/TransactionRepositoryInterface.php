@@ -21,12 +21,7 @@ interface TransactionRepositoryInterface
     /**
      * Get paginated transactions for admin.
      */
-    public function getPaginatedForAdmin(int $perPage = 10, ?string $status = null): LengthAwarePaginator;
-
-    /**
-     * Get all paginated transactions (all statuses).
-     */
-    public function getPaginatedAll(int $perPage = 10, ?string $search = null, ?string $status = null): LengthAwarePaginator;
+    public function getPaginatedForAdmin(int $perPage = 10, ?string $search = null, ?string $status = null): LengthAwarePaginator;
 
     /**
      * Find a transaction by ID with all relations.

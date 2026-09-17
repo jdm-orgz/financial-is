@@ -28,30 +28,13 @@ class AdminTransactionController extends Controller
      */
     public function index(): Response
     {
-        $status = request('status');
-        $perPage = (int) request('per_page', 10);
-
-        $transactions = $this->transactionRepository->getPaginatedForAdmin($perPage, $status);
-
-        return Inertia::render('Admin/Transactions/Index', [
-            'transactions' => $transactions,
-            'filters' => request()->only(['status']),
-            'per_page' => $perPage,
-        ]);
-    }
-
-    /**
-     * Display all transactions (all statuses).
-     */
-    public function all(): Response
-    {
         $search = request('search');
         $status = request('status');
         $perPage = (int) request('per_page', 10);
 
-        $transactions = $this->transactionRepository->getPaginatedAll($perPage, $search, $status);
+        $transactions = $this->transactionRepository->getPaginatedForAdmin($perPage, $search, $status);
 
-        return Inertia::render('Admin/Transactions/All', [
+        return Inertia::render('Admin/Transactions/Index', [
             'transactions' => $transactions,
             'filters' => request()->only(['search', 'status']),
             'per_page' => $perPage,

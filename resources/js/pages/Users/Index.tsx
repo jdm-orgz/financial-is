@@ -261,7 +261,7 @@ export default function Index({ users, per_page, filters = {} }: IndexProps) {
                                                             <Link
                                                                 href={`/users/${user.id}/edit`}
                                                             >
-                                                                <Pencil className="h-4 w-4" />
+                                                                <Pencil className="h-4 w-4 text-orange-600" />
                                                             </Link>
                                                         </Button>
                                                         {(user.username !==

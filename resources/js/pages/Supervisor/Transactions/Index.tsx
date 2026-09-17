@@ -1,5 +1,5 @@
 import { Head, Link, router } from '@inertiajs/react';
-import { Eye, ArrowUpDown, ArrowDown, ArrowUp } from 'lucide-react';
+import { Eye, Pencil, ArrowUpDown, ArrowDown, ArrowUp } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import type { PaginationLink } from '@/components/pagination';
 import { Pagination } from '@/components/pagination';
@@ -218,7 +218,11 @@ export default function Index({
                                             ) : (
                                                 <Button variant="ghost" size="icon" asChild>
                                                     <Link href={`/supervisor/transactions/${tx.id}`}>
-                                                        <Eye className="h-4 w-4" />
+                                                        {tx.status === 'approval' ? (
+                                                            <Pencil className="h-4 w-4 text-orange-600" />
+                                                        ) : (
+                                                            <Eye className="h-4 w-4" />
+                                                        )}
                                                     </Link>
                                                 </Button>
                                             )}

@@ -100,22 +100,7 @@ class EloquentTransactionRepository implements TransactionRepositoryInterface
             ->withQueryString();
     }
 
-    public function getPaginatedForAdmin(int $perPage = 10, ?string $status = null): LengthAwarePaginator
-    {
-        $query = Transaction::with('outlet', 'createdBy');
-
-        if ($status && $status !== 'all') {
-            $query->where('status', $status);
-        } elseif (! $status) {
-            $query->where('status', TransactionStatus::Comparing);
-        }
-
-        return $query->orderBy('created_at', 'desc')
-            ->paginate($perPage)
-            ->withQueryString();
-    }
-
-    public function getPaginatedAll(int $perPage = 10, ?string $search = null, ?string $status = null): LengthAwarePaginator
+    public function getPaginatedForAdmin(int $perPage = 10, ?string $search = null, ?string $status = null): LengthAwarePaginator
     {
         $query = Transaction::with('outlet', 'createdBy');
 

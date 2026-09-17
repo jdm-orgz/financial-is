@@ -107,8 +107,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::middleware(['permission:transaction/approval/admin/*,*'])->group(function () {
         Route::get('admin/transactions', [AdminTransactionController::class, 'index'])
             ->name('admin.transactions.index');
-        Route::get('admin/transactions/all', [AdminTransactionController::class, 'all'])
-            ->name('admin.transactions.all');
         Route::get('admin/transactions/{transaction}/compare', [AdminTransactionController::class, 'showCompare'])
             ->name('admin.transactions.compare')
             ->middleware('transaction.access:admin,comparing');
