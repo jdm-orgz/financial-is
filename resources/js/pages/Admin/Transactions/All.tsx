@@ -87,7 +87,7 @@ export default function All({
     const handleStatusFilter = (value: string) => {
         router.get(
             window.location.pathname,
-            { ...filters, status: value === 'all' ? undefined : value, search, per_page },
+            { ...filters, status: value, search, per_page },
             { preserveState: true, preserveScroll: true },
         );
     };
@@ -164,7 +164,7 @@ export default function All({
                                                     </Link>
                                                 </Button>
                                             ) : (
-                                                <span className="text-xs text-muted-foreground">Belum Selesai</span>
+                                                <span className="text-xs text-muted-foreground">Incomplete</span>
                                             )}
                                         </TableCell>
                                     </TableRow>

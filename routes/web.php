@@ -57,17 +57,35 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // SPG Transaction Routes
     Route::middleware(['permission:transaction/management/*,*'])->group(function () {
-        Route::resource('transactions', TransactionController::class)->except(['edit', 'update']);
+        Route::resource('transactions', TransactionController::class)->only(['index', 'create', 'store']);
+
+        Route::get('transactions/{transaction}', [TransactionController::class, 'show'])
+            ->name('transactions.show')
+            ->middleware('transaction.access:spg');
+
+        Route::delete('transactions/{transaction}', [TransactionController::class, 'destroy'])
+            ->name('transactions.destroy')
+            ->middleware('transaction.access:spg,draft');
+
         Route::post('transactions/{transaction}/submit', [TransactionController::class, 'submit'])
-            ->name('transactions.submit');
+            ->name('transactions.submit')
+            ->middleware('transaction.access:spg,draft,correction');
+
         Route::post('transactions/{transaction}/daily-incomes', [TransactionDailyIncomeController::class, 'upsert'])
-            ->name('transactions.daily-incomes.upsert');
+            ->name('transactions.daily-incomes.upsert')
+            ->middleware('transaction.access:spg,draft,correction');
+
         Route::resource('transactions.replacement-realizations', TransactionReplacementRealizationController::class)
-            ->except(['index', 'show', 'edit', 'create']);
+            ->except(['index', 'show', 'edit', 'create'])
+            ->middleware('transaction.access:spg,draft,correction');
+
         Route::delete('transactions/{transaction}/replacement-realizations/{replacement_realization}/proof/{type}', [TransactionReplacementRealizationController::class, 'destroyProof'])
-            ->name('transactions.replacement-realizations.destroy-proof');
+            ->name('transactions.replacement-realizations.destroy-proof')
+            ->middleware('transaction.access:spg,draft,correction');
+
         Route::resource('transactions.transfer-proofs', TransactionTransferProofController::class)
-            ->only(['store', 'destroy']);
+            ->only(['store', 'destroy'])
+            ->middleware('transaction.access:spg,draft,correction');
     });
 
     // Supervisor Transaction Routes
@@ -75,11 +93,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('supervisor/transactions', [SupervisorTransactionController::class, 'index'])
             ->name('supervisor.transactions.index');
         Route::get('supervisor/transactions/{transaction}', [SupervisorTransactionController::class, 'show'])
-            ->name('supervisor.transactions.show');
+            ->name('supervisor.transactions.show')
+            ->middleware('transaction.access:spv,approval,comparing,compared,done');
         Route::post('supervisor/transactions/{transaction}/approve', [SupervisorTransactionController::class, 'approve'])
-            ->name('supervisor.transactions.approve');
+            ->name('supervisor.transactions.approve')
+            ->middleware('transaction.access:spv,approval');
         Route::post('supervisor/transactions/{transaction}/reject', [SupervisorTransactionController::class, 'reject'])
-            ->name('supervisor.transactions.reject');
+            ->name('supervisor.transactions.reject')
+            ->middleware('transaction.access:spv,approval');
     });
 
     // Admin Transaction Routes
@@ -89,15 +110,20 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('admin/transactions/all', [AdminTransactionController::class, 'all'])
             ->name('admin.transactions.all');
         Route::get('admin/transactions/{transaction}/compare', [AdminTransactionController::class, 'showCompare'])
-            ->name('admin.transactions.compare');
+            ->name('admin.transactions.compare')
+            ->middleware('transaction.access:admin,comparing');
         Route::post('admin/transactions/{transaction}/system-incomes', [AdminTransactionController::class, 'storeSystemIncome'])
-            ->name('admin.transactions.system-incomes.store');
+            ->name('admin.transactions.system-incomes.store')
+            ->middleware('transaction.access:admin,comparing');
         Route::get('admin/transactions/{transaction}/result', [AdminTransactionController::class, 'showResult'])
-            ->name('admin.transactions.result');
+            ->name('admin.transactions.result')
+            ->middleware('transaction.access:admin,comparing,compared,done');
         Route::post('admin/transactions/{transaction}/approve', [AdminTransactionController::class, 'approve'])
-            ->name('admin.transactions.approve');
+            ->name('admin.transactions.approve')
+            ->middleware('transaction.access:admin,compared');
         Route::post('admin/transactions/{transaction}/reject', [AdminTransactionController::class, 'reject'])
-            ->name('admin.transactions.reject');
+            ->name('admin.transactions.reject')
+            ->middleware('transaction.access:admin,compared');
     });
 
 });

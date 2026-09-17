@@ -64,9 +64,9 @@ class EloquentTransactionRepository implements TransactionRepositoryInterface
             });
         }
 
-        if ($status) {
+        if ($status && $status !== 'all') {
             $query->where('status', $status);
-        } else {
+        } elseif (! $status) {
             $query->where('status', TransactionStatus::Approval);
         }
 
@@ -104,9 +104,9 @@ class EloquentTransactionRepository implements TransactionRepositoryInterface
     {
         $query = Transaction::with('outlet', 'createdBy');
 
-        if ($status) {
+        if ($status && $status !== 'all') {
             $query->where('status', $status);
-        } else {
+        } elseif (! $status) {
             $query->where('status', TransactionStatus::Comparing);
         }
 
@@ -125,7 +125,7 @@ class EloquentTransactionRepository implements TransactionRepositoryInterface
             });
         }
 
-        if ($status) {
+        if ($status && $status !== 'all') {
             $query->where('status', $status);
         }
 

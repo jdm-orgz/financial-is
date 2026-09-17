@@ -98,7 +98,7 @@ export default function Index({
     const handleStatusFilter = (value: string) => {
         router.get(
             window.location.pathname,
-            { ...filters, status: value === 'all' ? undefined : value, search, per_page, start_date: startDate, end_date: endDate },
+            { ...filters, status: value, search, per_page, start_date: startDate, end_date: endDate },
             { preserveState: true, preserveScroll: true },
         );
     };
@@ -132,7 +132,7 @@ export default function Index({
                             className="w-64"
                         />
                         <Select
-                            value={filters.status || 'all'}
+                            value={filters.status || 'approval'}
                             onValueChange={handleStatusFilter}
                         >
                             <SelectTrigger className="w-48">
@@ -140,6 +140,7 @@ export default function Index({
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="all">All Status</SelectItem>
+                                <SelectItem value="draft">Draft</SelectItem>
                                 <SelectItem value="approval">Pending Approval</SelectItem>
                                 <SelectItem value="comparing">Comparing</SelectItem>
                                 <SelectItem value="compared">Compared</SelectItem>
@@ -212,11 +213,15 @@ export default function Index({
                                             </Badge>
                                         </TableCell>
                                         <TableCell className="text-right">
-                                            <Button variant="ghost" size="icon" asChild>
-                                                <Link href={`/supervisor/transactions/${tx.id}`}>
-                                                    <Eye className="h-4 w-4" />
-                                                </Link>
-                                            </Button>
+                                            {tx.status === 'draft' ? (
+                                                <span className="text-xs text-muted-foreground">Incomplete</span>
+                                            ) : (
+                                                <Button variant="ghost" size="icon" asChild>
+                                                    <Link href={`/supervisor/transactions/${tx.id}`}>
+                                                        <Eye className="h-4 w-4" />
+                                                    </Link>
+                                                </Button>
+                                            )}
                                         </TableCell>
                                     </TableRow>
                                 ))

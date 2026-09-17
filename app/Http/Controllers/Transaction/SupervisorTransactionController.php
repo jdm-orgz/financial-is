@@ -5,10 +5,8 @@ namespace App\Http\Controllers\Transaction;
 use App\Domain\Transaction\Repositories\TransactionRepositoryInterface;
 use App\Enums\TransactionStatus;
 use App\Http\Controllers\Controller;
-use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Crypt;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -57,23 +55,7 @@ class SupervisorTransactionController extends Controller
      */
     public function show(string $transactionId): Response
     {
-        try {
-            $decryptedId = (string) Crypt::decryptString($transactionId);
-        } catch (DecryptException $e) {
-            abort(404);
-        }
-
-        $transaction = $this->transactionRepository->findById($decryptedId);
-
-        if (! $transaction) {
-            abort(404);
-        }
-
-        // Verify supervisor has access to this outlet
-        $supervisorOutletIds = auth()->user()->outlets()->pluck('outlets.id');
-        if (! $supervisorOutletIds->contains($transaction->outlet_id)) {
-            abort(403);
-        }
+        $transaction = request()->attributes->get('resolved_transaction');
 
         return Inertia::render('Supervisor/Transactions/Show', [
             'transaction' => $transaction,
@@ -85,23 +67,7 @@ class SupervisorTransactionController extends Controller
      */
     public function approve(string $transactionId): RedirectResponse
     {
-        try {
-            $decryptedId = (string) Crypt::decryptString($transactionId);
-        } catch (DecryptException $e) {
-            abort(404);
-        }
-
-        $transaction = $this->transactionRepository->findById($decryptedId);
-
-        if (! $transaction) {
-            abort(404);
-        }
-
-        if ($transaction->status !== TransactionStatus::Approval) {
-            Inertia::flash('toast', ['type' => 'error', 'message' => 'Transaction is not pending approval.']);
-
-            return redirect()->back();
-        }
+        $decryptedId = request()->attributes->get('decrypted_transaction_id');
 
         $this->transactionRepository->updateStatus($decryptedId, TransactionStatus::Comparing, [
             'supervisor_actioned_by' => auth()->id(),
@@ -122,23 +88,7 @@ class SupervisorTransactionController extends Controller
             'supervisor_notes' => ['required', 'string', 'max:1000'],
         ]);
 
-        try {
-            $decryptedId = (string) Crypt::decryptString($transactionId);
-        } catch (DecryptException $e) {
-            abort(404);
-        }
-
-        $transaction = $this->transactionRepository->findById($decryptedId);
-
-        if (! $transaction) {
-            abort(404);
-        }
-
-        if ($transaction->status !== TransactionStatus::Approval) {
-            Inertia::flash('toast', ['type' => 'error', 'message' => 'Transaction is not pending approval.']);
-
-            return redirect()->back();
-        }
+        $decryptedId = request()->attributes->get('decrypted_transaction_id');
 
         $this->transactionRepository->updateStatus($decryptedId, TransactionStatus::Correction, [
             'supervisor_actioned_by' => auth()->id(),

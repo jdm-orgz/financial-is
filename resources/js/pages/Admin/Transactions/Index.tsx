@@ -44,7 +44,7 @@ export default function Index({
     const handleStatusFilter = (value: string) => {
         router.get(
             window.location.pathname,
-            { ...filters, status: value === 'all' ? undefined : value, per_page },
+            { ...filters, status: value, per_page },
             { preserveState: true, preserveScroll: true },
         );
     };

@@ -64,21 +64,7 @@ class AdminTransactionController extends Controller
      */
     public function showCompare(string $transactionId): Response
     {
-        try {
-            $decryptedId = (string) Crypt::decryptString($transactionId);
-        } catch (DecryptException $e) {
-            abort(404);
-        }
-
-        $transaction = $this->transactionRepository->findById($decryptedId);
-
-        if (! $transaction) {
-            abort(404);
-        }
-
-        if ($transaction->status !== TransactionStatus::Comparing) {
-            abort(403);
-        }
+        $transaction = request()->attributes->get('resolved_transaction');
 
         $chairs = $transaction->outlet->chairs()->where('is_active', '1')->get();
 
@@ -93,23 +79,7 @@ class AdminTransactionController extends Controller
      */
     public function storeSystemIncome(StoreTransactionSystemIncomeRequest $request, string $transactionId): RedirectResponse
     {
-        try {
-            $decryptedId = (string) Crypt::decryptString($transactionId);
-        } catch (DecryptException $e) {
-            abort(404);
-        }
-
-        $transaction = $this->transactionRepository->findById($decryptedId);
-
-        if (! $transaction) {
-            abort(404);
-        }
-
-        if ($transaction->status !== TransactionStatus::Comparing) {
-            Inertia::flash('toast', ['type' => 'error', 'message' => 'Transaction is not in comparing status.']);
-
-            return redirect()->back();
-        }
+        $decryptedId = request()->attributes->get('decrypted_transaction_id');
 
         // Decrypt chair_ids
         $items = collect($request->validated('system_incomes'))->map(function ($item) {
@@ -140,17 +110,7 @@ class AdminTransactionController extends Controller
      */
     public function showResult(string $transactionId): Response
     {
-        try {
-            $decryptedId = (string) Crypt::decryptString($transactionId);
-        } catch (DecryptException $e) {
-            abort(404);
-        }
-
-        $transaction = $this->transactionRepository->findById($decryptedId);
-
-        if (! $transaction) {
-            abort(404);
-        }
+        $transaction = request()->attributes->get('resolved_transaction');
 
         $comparison = $this->calculateVarianceAction->execute($transaction);
 
@@ -165,23 +125,7 @@ class AdminTransactionController extends Controller
      */
     public function approve(string $transactionId): RedirectResponse
     {
-        try {
-            $decryptedId = (string) Crypt::decryptString($transactionId);
-        } catch (DecryptException $e) {
-            abort(404);
-        }
-
-        $transaction = $this->transactionRepository->findById($decryptedId);
-
-        if (! $transaction) {
-            abort(404);
-        }
-
-        if ($transaction->status !== TransactionStatus::Compared) {
-            Inertia::flash('toast', ['type' => 'error', 'message' => 'Transaction is not in an approvable status.']);
-
-            return redirect()->back();
-        }
+        $decryptedId = request()->attributes->get('decrypted_transaction_id');
 
         $this->transactionRepository->updateStatus($decryptedId, TransactionStatus::Done);
 
@@ -199,23 +143,7 @@ class AdminTransactionController extends Controller
             'admin_notes' => ['required', 'string', 'max:1000'],
         ]);
 
-        try {
-            $decryptedId = (string) Crypt::decryptString($transactionId);
-        } catch (DecryptException $e) {
-            abort(404);
-        }
-
-        $transaction = $this->transactionRepository->findById($decryptedId);
-
-        if (! $transaction) {
-            abort(404);
-        }
-
-        if ($transaction->status !== TransactionStatus::Compared) {
-            Inertia::flash('toast', ['type' => 'error', 'message' => 'Transaction is not in a rejectable status.']);
-
-            return redirect()->back();
-        }
+        $decryptedId = request()->attributes->get('decrypted_transaction_id');
 
         $this->transactionRepository->updateStatus($decryptedId, TransactionStatus::Correction, [
             'admin_notes' => $validated['admin_notes'],

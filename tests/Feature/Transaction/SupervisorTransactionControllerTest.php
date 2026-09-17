@@ -8,6 +8,7 @@ use App\Domain\UserAccess\Models\User;
 use App\Enums\TransactionStatus;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Crypt;
+use Lauthz\Facades\Enforcer;
 use Tests\TestCase;
 
 class SupervisorTransactionControllerTest extends TestCase
@@ -17,7 +18,7 @@ class SupervisorTransactionControllerTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->withoutMiddleware();
+        Enforcer::shouldReceive('enforce')->andReturn(true);
         $this->supervisor = User::factory()->create();
         $this->outlet = Outlet::factory()->create();
         $this->supervisor->outlets()->attach($this->outlet->id, ['is_active' => '1', 'created_by' => $this->supervisor->id]);

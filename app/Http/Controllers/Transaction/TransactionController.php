@@ -7,7 +7,6 @@ use App\Domain\Transaction\Repositories\TransactionRepositoryInterface;
 use App\Enums\TransactionStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Transaction\StoreTransactionRequest;
-use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Crypt;
 use Inertia\Inertia;
@@ -102,17 +101,7 @@ class TransactionController extends Controller
      */
     public function show(string $transactionId): Response
     {
-        try {
-            $decryptedId = (string) Crypt::decryptString($transactionId);
-        } catch (DecryptException $e) {
-            abort(404);
-        }
-
-        $transaction = $this->transactionRepository->findById($decryptedId);
-
-        if (! $transaction || $transaction->created_by !== auth()->id()) {
-            abort(404);
-        }
+        $transaction = request()->attributes->get('resolved_transaction');
 
         $chairs = $transaction->outlet->chairs()->where('is_active', '1')->get();
 
@@ -127,24 +116,8 @@ class TransactionController extends Controller
      */
     public function submit(string $transactionId): RedirectResponse
     {
-        try {
-            $decryptedId = (string) Crypt::decryptString($transactionId);
-        } catch (DecryptException $e) {
-            abort(404);
-        }
-
-        $transaction = $this->transactionRepository->findById($decryptedId);
-
-        if (! $transaction || $transaction->created_by !== auth()->id()) {
-            abort(404);
-        }
-
-        // Must be in draft or correction status
-        if (! in_array($transaction->status, [TransactionStatus::Draft, TransactionStatus::Correction])) {
-            Inertia::flash('toast', ['type' => 'error', 'message' => 'Transaction is not in a submittable status.']);
-
-            return redirect()->back();
-        }
+        $decryptedId = request()->attributes->get('decrypted_transaction_id');
+        $transaction = request()->attributes->get('resolved_transaction');
 
         // Validate: all chairs must have daily income entries
         $outletChairIds = $transaction->outlet->chairs()->where('is_active', '1')->pluck('id');
@@ -175,23 +148,7 @@ class TransactionController extends Controller
      */
     public function destroy(string $transactionId): RedirectResponse
     {
-        try {
-            $decryptedId = (string) Crypt::decryptString($transactionId);
-        } catch (DecryptException $e) {
-            abort(404);
-        }
-
-        $transaction = $this->transactionRepository->findById($decryptedId);
-
-        if (! $transaction || $transaction->created_by !== auth()->id()) {
-            abort(404);
-        }
-
-        if ($transaction->status !== TransactionStatus::Draft) {
-            Inertia::flash('toast', ['type' => 'error', 'message' => 'Only draft transactions can be deleted.']);
-
-            return redirect()->back();
-        }
+        $decryptedId = request()->attributes->get('decrypted_transaction_id');
 
         $this->transactionRepository->delete($decryptedId);
 

@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\Model;
 class TransactionTransferProof extends Model
 {
     /** @use HasFactory<TransactionTransferProofFactory> */
-    use HasFactory, HasUuids, EncryptsId;
+    use EncryptsId, HasFactory, HasUuids;
 
     protected static function newFactory()
     {

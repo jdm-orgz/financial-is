@@ -9,6 +9,7 @@ use App\Domain\UserAccess\Models\User;
 use App\Enums\TransactionStatus;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Crypt;
+use Lauthz\Facades\Enforcer;
 use Tests\TestCase;
 
 class AdminTransactionControllerTest extends TestCase
@@ -18,7 +19,7 @@ class AdminTransactionControllerTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->withoutMiddleware();
+        Enforcer::shouldReceive('enforce')->andReturn(true);
         $this->admin = User::factory()->create();
         $this->outlet = Outlet::factory()->create();
         $this->chair = Chair::factory()->create(['outlet_id' => $this->outlet->id]);
@@ -57,7 +58,7 @@ class AdminTransactionControllerTest extends TestCase
     {
         $this->transaction->update(['status' => TransactionStatus::Draft]);
         $response = $this->actingAs($this->admin)->get('/admin/transactions/'.Crypt::encryptString($this->transaction->id).'/compare');
-        $response->assertStatus(403);
+        $response->assertRedirect()->assertSessionHas('toast');
     }
 
     public function test_store_system_income_success()
@@ -71,6 +72,7 @@ class AdminTransactionControllerTest extends TestCase
             ],
         ]);
 
+        $response->dump();
         $response->assertRedirect();
         $this->assertEquals(TransactionStatus::Compared, $this->transaction->fresh()->status);
         $this->assertDatabaseHas('transaction_system_incomes', [
@@ -87,6 +89,7 @@ class AdminTransactionControllerTest extends TestCase
             'system_incomes' => [],
         ]);
 
+        $response->dump();
         $response->assertRedirect();
         $this->assertEquals(TransactionStatus::Draft, $this->transaction->fresh()->status);
     }
@@ -121,6 +124,7 @@ class AdminTransactionControllerTest extends TestCase
     {
         $this->transaction->update(['status' => TransactionStatus::Compared]);
         $response = $this->actingAs($this->admin)->post('/admin/transactions/'.Crypt::encryptString($this->transaction->id).'/approve');
+        $response->dump();
         $response->assertRedirect('/admin/transactions');
         $this->assertEquals(TransactionStatus::Done, $this->transaction->fresh()->status);
     }
@@ -128,6 +132,7 @@ class AdminTransactionControllerTest extends TestCase
     public function test_approve_invalid_status()
     {
         $response = $this->actingAs($this->admin)->post('/admin/transactions/'.Crypt::encryptString($this->transaction->id).'/approve');
+        $response->dump();
         $response->assertRedirect();
         $this->assertEquals(TransactionStatus::Comparing, $this->transaction->fresh()->status);
     }
@@ -144,6 +149,7 @@ class AdminTransactionControllerTest extends TestCase
         $response = $this->actingAs($this->admin)->post('/admin/transactions/'.Crypt::encryptString($this->transaction->id).'/reject', [
             'admin_notes' => 'Incorrect income',
         ]);
+        $response->dump();
         $response->assertRedirect('/admin/transactions');
         $this->assertEquals(TransactionStatus::Correction, $this->transaction->fresh()->status);
         $this->assertEquals('Incorrect income', $this->transaction->fresh()->admin_notes);
@@ -154,6 +160,7 @@ class AdminTransactionControllerTest extends TestCase
         $response = $this->actingAs($this->admin)->post('/admin/transactions/'.Crypt::encryptString($this->transaction->id).'/reject', [
             'admin_notes' => 'Incorrect income',
         ]);
+        $response->dump();
         $response->assertRedirect();
         $this->assertEquals(TransactionStatus::Comparing, $this->transaction->fresh()->status);
     }

@@ -18,7 +18,7 @@ use Illuminate\Database\Eloquent\Model;
 class TransactionReplacementRealization extends Model
 {
     /** @use HasFactory<TransactionReplacementRealizationFactory> */
-    use HasFactory, HasUuids, EncryptsId;
+    use EncryptsId, HasFactory, HasUuids;
 
     protected static function newFactory()
     {

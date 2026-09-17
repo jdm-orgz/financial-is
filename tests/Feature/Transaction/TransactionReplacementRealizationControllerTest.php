@@ -13,6 +13,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Storage;
+use Lauthz\Facades\Enforcer;
 use Tests\TestCase;
 
 class TransactionReplacementRealizationControllerTest extends TestCase
@@ -22,7 +23,7 @@ class TransactionReplacementRealizationControllerTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->withoutMiddleware();
+        Enforcer::shouldReceive('enforce')->andReturn(true);
         $this->user = User::factory()->create();
         $this->outlet = Outlet::factory()->create();
         $this->chair1 = Chair::factory()->create(['outlet_id' => $this->outlet->id]);

@@ -11,6 +11,7 @@ use App\Domain\UserAccess\Models\User;
 use App\Enums\TransactionStatus;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Crypt;
+use Lauthz\Facades\Enforcer;
 use Tests\TestCase;
 
 class TransactionControllerTest extends TestCase
@@ -20,7 +21,7 @@ class TransactionControllerTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->withoutMiddleware();
+        Enforcer::shouldReceive('enforce')->andReturn(true);
         $this->user = User::factory()->create();
         $this->outlet = Outlet::factory()->create();
         $this->user->outlets()->attach($this->outlet->id, ['is_active' => '1', 'created_by' => $this->user->id]);
