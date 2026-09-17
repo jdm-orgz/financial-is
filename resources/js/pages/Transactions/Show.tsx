@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { ConfirmModal } from '@/components/confirm-modal';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Check, ChevronsUpDown } from 'lucide-react';
@@ -139,6 +140,26 @@ export default function Show({ transaction, chairs }: ShowProps) {
         proof_image: null as File | null,
     });
 
+    const [confirmState, setConfirmState] = useState<{
+        isOpen: boolean;
+        title: string;
+        description: string;
+        confirmText: string;
+        confirmVariant: 'default' | 'destructive' | 'secondary' | 'outline';
+        action: () => void;
+    }>({
+        isOpen: false,
+        title: '',
+        description: '',
+        confirmText: '',
+        confirmVariant: 'default',
+        action: () => {},
+    });
+
+    const openConfirm = (title: string, description: string, confirmText: string, confirmVariant: any, action: () => void) => {
+        setConfirmState({ isOpen: true, title, description, confirmText, confirmVariant, action });
+    };
+
     const handleSaveDaily = () => {
         postDaily(`/transactions/${transaction.id}/daily-incomes`, {
             preserveScroll: true,
@@ -189,15 +210,21 @@ export default function Show({ transaction, chairs }: ShowProps) {
 
     const handleDeleteProof = (type: 'image' | 'video') => {
         if (!editingRealizationId) return;
-        if (confirm(`Are you sure you want to delete the existing ${type} proof?`)) {
-            router.delete(`/transactions/${transaction.id}/replacement-realizations/${editingRealizationId}/proof/${type}`, {
-                onSuccess: () => {
-                    if (type === 'image') setExistingProofImage(null);
-                    if (type === 'video') setExistingProofVideo(null);
-                },
-                preserveScroll: true
-            });
-        }
+        openConfirm(
+            `Delete ${type} Proof`,
+            `Are you sure you want to delete the existing ${type} proof?`,
+            'Delete',
+            'destructive',
+            () => {
+                router.delete(`/transactions/${transaction.id}/replacement-realizations/${editingRealizationId}/proof/${type}`, {
+                    onSuccess: () => {
+                        if (type === 'image') setExistingProofImage(null);
+                        if (type === 'video') setExistingProofVideo(null);
+                    },
+                    preserveScroll: true
+                });
+            }
+        );
     };
 
     const handleEditClick = (real: any) => {
@@ -223,11 +250,17 @@ export default function Show({ transaction, chairs }: ShowProps) {
     };
 
     const handleDeleteRealization = (realizationId: string | number) => {
-        if (confirm('Are you sure you want to delete this replacement realization?')) {
-            router.delete(`/transactions/${transaction.id}/replacement-realizations/${realizationId}`, {
-                preserveScroll: true,
-            });
-        }
+        openConfirm(
+            'Delete Replacement Realization',
+            'Are you sure you want to delete this replacement realization?',
+            'Delete',
+            'destructive',
+            () => {
+                router.delete(`/transactions/${transaction.id}/replacement-realizations/${realizationId}`, {
+                    preserveScroll: true,
+                });
+            }
+        );
     };
 
     const handleUploadTransfer = (e: React.FormEvent<HTMLFormElement>) => {
@@ -242,19 +275,31 @@ export default function Show({ transaction, chairs }: ShowProps) {
     };
 
     const handleDeleteTransfer = (proofId: string | number) => {
-        if (confirm('Are you sure you want to delete this transfer proof?')) {
-            router.delete(`/transactions/${transaction.id}/transfer-proofs/${proofId}`, {
-                preserveScroll: true,
-            });
-        }
+        openConfirm(
+            'Delete Transfer Proof',
+            'Are you sure you want to delete this transfer proof?',
+            'Delete',
+            'destructive',
+            () => {
+                router.delete(`/transactions/${transaction.id}/transfer-proofs/${proofId}`, {
+                    preserveScroll: true,
+                });
+            }
+        );
     };
 
     const handleSubmitTransaction = () => {
-        if (confirm('Submit this transaction for supervisor approval? Ensure all data is correct.')) {
-            router.post(`/transactions/${transaction.id}/submit`, {}, {
-                preserveScroll: true,
-            });
-        }
+        openConfirm(
+            'Submit for Approval',
+            'Submit this transaction for supervisor approval? Ensure all data is correct.',
+            'Submit',
+            'default',
+            () => {
+                router.post(`/transactions/${transaction.id}/submit`, {}, {
+                    preserveScroll: true,
+                });
+            }
+        );
     };
 
     return (
@@ -741,6 +786,21 @@ export default function Show({ transaction, chairs }: ShowProps) {
                     </div>
                 </DialogContent>
             </Dialog>
+
+            <ConfirmModal
+                isOpen={confirmState.isOpen}
+                onOpenChange={(open) => {
+                    if (!open) setConfirmState(prev => ({ ...prev, isOpen: false }));
+                }}
+                onConfirm={() => {
+                    setConfirmState(prev => ({ ...prev, isOpen: false }));
+                    confirmState.action();
+                }}
+                title={confirmState.title}
+                description={confirmState.description}
+                confirmText={confirmState.confirmText}
+                confirmVariant={confirmState.confirmVariant}
+            />
         </>
     );
 }

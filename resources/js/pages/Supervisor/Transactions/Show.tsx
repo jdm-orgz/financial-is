@@ -3,6 +3,7 @@ import { ChevronLeft, CheckCircle, XCircle } from 'lucide-react';
 import { useState, type ChangeEvent } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ConfirmModal } from '@/components/confirm-modal';
 import {
     Dialog,
     DialogContent,
@@ -40,12 +41,38 @@ export default function Show({ transaction }: ShowProps) {
         supervisor_notes: '',
     });
 
+    const [confirmState, setConfirmState] = useState<{
+        isOpen: boolean;
+        title: string;
+        description: string;
+        confirmText: string;
+        confirmVariant: 'default' | 'destructive' | 'secondary' | 'outline';
+        action: () => void;
+    }>({
+        isOpen: false,
+        title: '',
+        description: '',
+        confirmText: '',
+        confirmVariant: 'default',
+        action: () => {},
+    });
+
+    const openConfirm = (title: string, description: string, confirmText: string, confirmVariant: any, action: () => void) => {
+        setConfirmState({ isOpen: true, title, description, confirmText, confirmVariant, action });
+    };
+
     const handleApprove = () => {
-        if (confirm('Yakin ingin menyetujui transaksi ini? Data akan diteruskan ke Admin.')) {
-            router.post(`/supervisor/transactions/${transaction.id}/approve`, {}, {
-                preserveScroll: true,
-            });
-        }
+        openConfirm(
+            'Approve Transaction',
+            'Yakin ingin menyetujui transaksi ini? Data akan diteruskan ke Admin.',
+            'Approve',
+            'default',
+            () => {
+                router.post(`/supervisor/transactions/${transaction.id}/approve`, {}, {
+                    preserveScroll: true,
+                });
+            }
+        );
     };
 
     const handleReject = (e: React.FormEvent) => {
@@ -213,6 +240,21 @@ export default function Show({ transaction }: ShowProps) {
                     </form>
                 </DialogContent>
             </Dialog>
+
+            <ConfirmModal
+                isOpen={confirmState.isOpen}
+                onOpenChange={(open) => {
+                    if (!open) setConfirmState(prev => ({ ...prev, isOpen: false }));
+                }}
+                onConfirm={() => {
+                    setConfirmState(prev => ({ ...prev, isOpen: false }));
+                    confirmState.action();
+                }}
+                title={confirmState.title}
+                description={confirmState.description}
+                confirmText={confirmState.confirmText}
+                confirmVariant={confirmState.confirmVariant}
+            />
         </>
     );
 }
