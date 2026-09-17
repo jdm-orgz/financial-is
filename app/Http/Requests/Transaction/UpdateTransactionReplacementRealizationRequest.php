@@ -25,7 +25,7 @@ class UpdateTransactionReplacementRealizationRequest extends FormRequest
             'problem_chair_id' => ['sometimes', 'string'],
             'replacement_chair_id' => ['sometimes', 'string'],
             'payment_method' => ['sometimes', new Enum(PaymentMethod::class)],
-            'amount' => ['sometimes', 'numeric', 'min:1'],
+            'amount' => ['sometimes', 'numeric', 'min:0'],
             'proof_image' => ['nullable', 'image', 'max:5120'],
             'proof_video' => ['nullable', 'file', 'mimetypes:video/mp4,video/quicktime,video/x-msvideo', 'max:51200'],
         ];

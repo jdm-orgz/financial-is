@@ -204,4 +204,49 @@ class TransactionReplacementRealizationController extends Controller
 
         return redirect()->back();
     }
+
+    /**
+     * Remove the specified proof file from a replacement realization.
+     */
+    public function destroyProof(string $transactionId, string $realizationId, string $type): RedirectResponse
+    {
+        try {
+            $decryptedTransactionId = (string) Crypt::decryptString($transactionId);
+            $decryptedRealizationId = (string) Crypt::decryptString($realizationId);
+        } catch (DecryptException $e) {
+            abort(404);
+        }
+
+        $transaction = $this->transactionRepository->findById($decryptedTransactionId);
+
+        if (! $transaction || $transaction->created_by !== auth()->id()) {
+            abort(404);
+        }
+
+        if (! in_array($transaction->status, [TransactionStatus::Draft, TransactionStatus::Correction])) {
+            Inertia::flash('toast', ['type' => 'error', 'message' => 'Transaction is not in an editable status.']);
+
+            return redirect()->back();
+        }
+
+        $realization = $this->realizationRepository->findById($decryptedRealizationId);
+
+        if (! $realization || $realization->transaction_id !== $decryptedTransactionId) {
+            abort(404);
+        }
+
+        if ($type === 'image' && $realization->proof_image_path) {
+            Storage::disk('public')->delete($realization->proof_image_path);
+            $this->realizationRepository->update($decryptedRealizationId, ['proof_image_path' => null]);
+            Inertia::flash('toast', ['type' => 'success', 'message' => 'Photo proof deleted successfully.']);
+        } elseif ($type === 'video' && $realization->proof_video_path) {
+            Storage::disk('public')->delete($realization->proof_video_path);
+            $this->realizationRepository->update($decryptedRealizationId, ['proof_video_path' => null]);
+            Inertia::flash('toast', ['type' => 'success', 'message' => 'Video proof deleted successfully.']);
+        } else {
+            abort(404);
+        }
+
+        return redirect()->back();
+    }
 }

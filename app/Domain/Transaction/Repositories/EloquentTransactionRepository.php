@@ -8,7 +8,7 @@ use Illuminate\Pagination\LengthAwarePaginator;
 
 class EloquentTransactionRepository implements TransactionRepositoryInterface
 {
-    public function getPaginatedForSpg(string $spgUserId, int $perPage = 10, ?string $search = null, ?string $status = null): LengthAwarePaginator
+    public function getPaginatedForSpg(string $spgUserId, int $perPage = 10, ?string $search = null, ?string $status = null, ?string $sortBy = null, string $sortDirection = 'asc', ?string $startDate = null, ?string $endDate = null): LengthAwarePaginator
     {
         $query = Transaction::with('outlet')
             ->where('created_by', $spgUserId);
@@ -23,8 +23,29 @@ class EloquentTransactionRepository implements TransactionRepositoryInterface
             $query->where('status', $status);
         }
 
-        return $query->orderBy('created_at', 'desc')
-            ->paginate($perPage)
+        if ($startDate) {
+            $query->where('date', '>=', $startDate);
+        }
+
+        if ($endDate) {
+            $query->where('date', '<=', $endDate);
+        }
+
+        if ($sortBy) {
+            if ($sortBy === 'outlet') {
+                $query->join('outlets', 'transactions.outlet_id', '=', 'outlets.id')
+                    ->orderBy('outlets.name', $sortDirection === 'desc' ? 'desc' : 'asc')
+                    ->select('transactions.*');
+            } elseif ($sortBy === 'time') {
+                $query->orderBy('date', $sortDirection === 'desc' ? 'desc' : 'asc');
+            } else {
+                $query->orderBy($sortBy, $sortDirection === 'desc' ? 'desc' : 'asc');
+            }
+        } else {
+            $query->orderBy('created_at', 'desc');
+        }
+
+        return $query->paginate($perPage)
             ->withQueryString();
     }
 

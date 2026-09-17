@@ -4,6 +4,7 @@ namespace App\Domain\Transaction\Models;
 
 use App\Domain\Outlet\Models\Chair;
 use App\Enums\PaymentMethod;
+use App\Traits\EncryptsId;
 use Database\Factories\TransactionReplacementRealizationFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
@@ -17,7 +18,7 @@ use Illuminate\Database\Eloquent\Model;
 class TransactionReplacementRealization extends Model
 {
     /** @use HasFactory<TransactionReplacementRealizationFactory> */
-    use HasFactory, HasUuids;
+    use HasFactory, HasUuids, EncryptsId;
 
     protected static function newFactory()
     {

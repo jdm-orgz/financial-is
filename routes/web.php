@@ -64,6 +64,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->name('transactions.daily-incomes.upsert');
         Route::resource('transactions.replacement-realizations', TransactionReplacementRealizationController::class)
             ->except(['index', 'show', 'edit', 'create']);
+        Route::delete('transactions/{transaction}/replacement-realizations/{replacement_realization}/proof/{type}', [TransactionReplacementRealizationController::class, 'destroyProof'])
+            ->name('transactions.replacement-realizations.destroy-proof');
         Route::resource('transactions.transfer-proofs', TransactionTransferProofController::class)
             ->only(['store', 'destroy']);
     });

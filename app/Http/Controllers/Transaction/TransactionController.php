@@ -27,18 +27,29 @@ class TransactionController extends Controller
     {
         $search = request('search');
         $status = request('status');
+        $sortBy = request('sort_by');
+        $sortDirection = request('sort_direction', 'asc');
+        $startDate = request('start_date', now()->format('Y-m-d'));
+        $endDate = request('end_date', now()->format('Y-m-d'));
         $perPage = (int) request('per_page', 10);
 
         $transactions = $this->transactionRepository->getPaginatedForSpg(
             auth()->id(),
             $perPage,
             $search,
-            $status
+            $status,
+            $sortBy,
+            $sortDirection,
+            $startDate,
+            $endDate
         );
 
         return Inertia::render('Transactions/Index', [
             'transactions' => $transactions,
-            'filters' => request()->only(['search', 'status']),
+            'filters' => array_merge(request()->only(['search', 'status', 'sort_by', 'sort_direction']), [
+                'start_date' => $startDate,
+                'end_date' => $endDate,
+            ]),
             'per_page' => $perPage,
             'statusOptions' => TransactionStatus::options(),
         ]);

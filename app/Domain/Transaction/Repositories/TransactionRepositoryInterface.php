@@ -11,7 +11,7 @@ interface TransactionRepositoryInterface
     /**
      * Get paginated transactions for an SPG user.
      */
-    public function getPaginatedForSpg(string $spgUserId, int $perPage = 10, ?string $search = null, ?string $status = null): LengthAwarePaginator;
+    public function getPaginatedForSpg(string $spgUserId, int $perPage = 10, ?string $search = null, ?string $status = null, ?string $sortBy = null, string $sortDirection = 'asc', ?string $startDate = null, ?string $endDate = null): LengthAwarePaginator;
 
     /**
      * Get paginated transactions for a supervisor.

@@ -2,6 +2,7 @@
 
 namespace App\Domain\Transaction\Models;
 
+use App\Traits\EncryptsId;
 use Database\Factories\TransactionTransferProofFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
@@ -12,7 +13,7 @@ use Illuminate\Database\Eloquent\Model;
 class TransactionTransferProof extends Model
 {
     /** @use HasFactory<TransactionTransferProofFactory> */
-    use HasFactory, HasUuids;
+    use HasFactory, HasUuids, EncryptsId;
 
     protected static function newFactory()
     {
