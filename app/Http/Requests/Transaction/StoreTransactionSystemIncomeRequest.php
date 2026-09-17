@@ -22,7 +22,7 @@ class StoreTransactionSystemIncomeRequest extends FormRequest
         return [
             'system_incomes' => ['required', 'array', 'min:1'],
             'system_incomes.*.chair_id' => ['required', 'string'],
-            'system_incomes.*.amount' => ['required', 'numeric', 'min:1'],
+            'system_incomes.*.amount' => ['required', 'numeric', 'min:0'],
         ];
     }
 }
