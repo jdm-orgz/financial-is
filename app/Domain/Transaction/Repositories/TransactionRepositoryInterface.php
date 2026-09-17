@@ -16,7 +16,7 @@ interface TransactionRepositoryInterface
     /**
      * Get paginated transactions for a supervisor.
      */
-    public function getPaginatedForSupervisor(string $supervisorId, int $perPage = 10, ?string $status = null): LengthAwarePaginator;
+    public function getPaginatedForSupervisor(string $supervisorId, int $perPage = 10, ?string $search = null, ?string $status = null, ?string $sortBy = null, string $sortDirection = 'asc', ?string $startDate = null, ?string $endDate = null): LengthAwarePaginator;
 
     /**
      * Get paginated transactions for admin.

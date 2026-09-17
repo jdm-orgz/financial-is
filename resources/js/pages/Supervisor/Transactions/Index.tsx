@@ -1,5 +1,6 @@
 import { Head, Link, router } from '@inertiajs/react';
-import { Eye } from 'lucide-react';
+import { Eye, ArrowUpDown, ArrowDown, ArrowUp } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
 import type { PaginationLink } from '@/components/pagination';
 import { Pagination } from '@/components/pagination';
 import { Badge } from '@/components/ui/badge';
@@ -48,8 +49,12 @@ interface IndexProps {
         total: number;
     };
     filters: {
-        status?: string;
         search?: string;
+        status?: string;
+        sort_by?: string;
+        sort_direction?: string;
+        start_date?: string;
+        end_date?: string;
     };
     per_page: number;
 }
@@ -59,12 +64,57 @@ export default function Index({
     filters = {},
     per_page,
 }: IndexProps) {
+    const [search, setSearch] = useState(filters.search || '');
+    const [startDate, setStartDate] = useState(filters.start_date || '');
+    const [endDate, setEndDate] = useState(filters.end_date || '');
+    const prevSearch = useRef(search);
+
+    useEffect(() => {
+        if (search === prevSearch.current) {
+            return;
+        }
+
+        prevSearch.current = search;
+        const timeoutId = setTimeout(() => {
+            router.get(
+                window.location.pathname,
+                { ...filters, search, per_page, start_date: startDate, end_date: endDate },
+                { preserveState: true, preserveScroll: true },
+            );
+        }, 300);
+
+        return () => clearTimeout(timeoutId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [search]);
+
+    const handleDateFilter = () => {
+        router.get(
+            window.location.pathname,
+            { ...filters, search, per_page, start_date: startDate, end_date: endDate },
+            { preserveState: true, preserveScroll: true },
+        );
+    };
+
     const handleStatusFilter = (value: string) => {
         router.get(
             window.location.pathname,
-            { ...filters, status: value === 'all' ? undefined : value, per_page },
+            { ...filters, status: value === 'all' ? undefined : value, search, per_page, start_date: startDate, end_date: endDate },
             { preserveState: true, preserveScroll: true },
         );
+    };
+
+    const handleSort = (field: string) => {
+        const direction = filters.sort_by === field && filters.sort_direction === 'asc' ? 'desc' : 'asc';
+        router.get(
+            window.location.pathname,
+            { ...filters, sort_by: field, sort_direction: direction, per_page, search, start_date: startDate, end_date: endDate },
+            { preserveState: true, preserveScroll: true }
+        );
+    };
+
+    const renderSortIcon = (field: string) => {
+        if (filters.sort_by !== field) return <ArrowUpDown className="ml-2 h-4 w-4" />;
+        return filters.sort_direction === 'asc' ? <ArrowUp className="ml-2 h-4 w-4" /> : <ArrowDown className="ml-2 h-4 w-4" />;
     };
 
     return (
@@ -77,17 +127,9 @@ export default function Index({
                         <Input
                             type="search"
                             placeholder="Search outlet..."
-                            defaultValue={filters.search}
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
                             className="w-64"
-                            onKeyDown={(e) => {
-                                if (e.key === 'Enter') {
-                                    router.get(
-                                        window.location.pathname,
-                                        { ...filters, search: e.currentTarget.value, per_page },
-                                        { preserveState: true, preserveScroll: true },
-                                    );
-                                }
-                            }}
                         />
                         <Select
                             value={filters.status || 'all'}
@@ -105,6 +147,24 @@ export default function Index({
                                 <SelectItem value="done">Done</SelectItem>
                             </SelectContent>
                         </Select>
+                        <div className="flex items-center gap-2 border rounded-md px-2 py-1">
+                            <span className="text-sm text-muted-foreground whitespace-nowrap">From:</span>
+                            <Input
+                                type="date"
+                                value={startDate}
+                                onChange={(e) => setStartDate(e.target.value)}
+                                onBlur={handleDateFilter}
+                                className="w-36 h-8 border-none focus-visible:ring-0 shadow-none px-1"
+                            />
+                            <span className="text-sm text-muted-foreground whitespace-nowrap">To:</span>
+                            <Input
+                                type="date"
+                                value={endDate}
+                                onChange={(e) => setEndDate(e.target.value)}
+                                onBlur={handleDateFilter}
+                                className="w-36 h-8 border-none focus-visible:ring-0 shadow-none px-1"
+                            />
+                        </div>
                     </div>
                 </div>
 
@@ -112,17 +172,28 @@ export default function Index({
                     <Table>
                         <TableHeader>
                             <TableRow>
-                                <TableHead>Outlet</TableHead>
-                                <TableHead>SPG</TableHead>
-                                <TableHead>Date</TableHead>
-                                <TableHead>Status</TableHead>
+                                <TableHead className="cursor-pointer" onClick={() => handleSort('outlet')}>
+                                    <div className="flex items-center">Outlet {renderSortIcon('outlet')}</div>
+                                </TableHead>
+                                <TableHead className="cursor-pointer" onClick={() => handleSort('spg')}>
+                                    <div className="flex items-center">SPG {renderSortIcon('spg')}</div>
+                                </TableHead>
+                                <TableHead className="cursor-pointer" onClick={() => handleSort('date')}>
+                                    <div className="flex items-center">Date {renderSortIcon('date')}</div>
+                                </TableHead>
+                                <TableHead className="cursor-pointer" onClick={() => handleSort('time')}>
+                                    <div className="flex items-center">Time {renderSortIcon('time')}</div>
+                                </TableHead>
+                                <TableHead className="cursor-pointer" onClick={() => handleSort('status')}>
+                                    <div className="flex items-center">Status {renderSortIcon('status')}</div>
+                                </TableHead>
                                 <TableHead className="text-right">Action</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             {transactions.data.length === 0 ? (
                                 <TableRow>
-                                    <TableCell colSpan={5} className="h-24 text-center">
+                                    <TableCell colSpan={6} className="h-24 text-center">
                                         No transaction data found.
                                     </TableCell>
                                 </TableRow>
@@ -133,7 +204,8 @@ export default function Index({
                                             {tx.outlet.name}
                                         </TableCell>
                                         <TableCell>{tx.created_by.name}</TableCell>
-                                        <TableCell>{tx.date}</TableCell>
+                                        <TableCell>{tx.date.includes('T') ? tx.date.substring(0, 10) : tx.date}</TableCell>
+                                        <TableCell>{tx.date.includes('T') ? tx.date.substring(11, 19) : '-'}</TableCell>
                                         <TableCell>
                                             <Badge variant={statusVariantMap[tx.status] || 'secondary'}>
                                                 {statusLabelMap[tx.status] || tx.status}
@@ -162,7 +234,7 @@ export default function Index({
                                 onValueChange={(value) => {
                                     router.get(
                                         window.location.pathname,
-                                        { ...filters, per_page: value },
+                                        { ...filters, per_page: value, search, start_date: startDate, end_date: endDate },
                                         { preserveState: true, preserveScroll: true },
                                     );
                                 }}

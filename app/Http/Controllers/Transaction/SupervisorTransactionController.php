@@ -24,17 +24,30 @@ class SupervisorTransactionController extends Controller
     public function index(): Response
     {
         $status = request('status');
+        $search = request('search');
+        $sortBy = request('sort_by');
+        $sortDirection = request('sort_direction', 'asc');
+        $startDate = request('start_date', now()->format('Y-m-d'));
+        $endDate = request('end_date', now()->format('Y-m-d'));
         $perPage = (int) request('per_page', 10);
 
         $transactions = $this->transactionRepository->getPaginatedForSupervisor(
             auth()->id(),
             $perPage,
-            $status
+            $search,
+            $status,
+            $sortBy,
+            $sortDirection,
+            $startDate,
+            $endDate
         );
 
         return Inertia::render('Supervisor/Transactions/Index', [
             'transactions' => $transactions,
-            'filters' => request()->only(['status']),
+            'filters' => array_merge(request()->only(['status', 'search', 'sort_by', 'sort_direction']), [
+                'start_date' => $startDate,
+                'end_date' => $endDate,
+            ]),
             'per_page' => $perPage,
         ]);
     }

@@ -49,7 +49,7 @@ class EloquentTransactionRepository implements TransactionRepositoryInterface
             ->withQueryString();
     }
 
-    public function getPaginatedForSupervisor(string $supervisorId, int $perPage = 10, ?string $status = null): LengthAwarePaginator
+    public function getPaginatedForSupervisor(string $supervisorId, int $perPage = 10, ?string $search = null, ?string $status = null, ?string $sortBy = null, string $sortDirection = 'asc', ?string $startDate = null, ?string $endDate = null): LengthAwarePaginator
     {
         $query = Transaction::with('outlet', 'createdBy')
             ->whereHas('outlet', function ($q) use ($supervisorId) {
@@ -58,14 +58,45 @@ class EloquentTransactionRepository implements TransactionRepositoryInterface
                 });
             });
 
+        if ($search) {
+            $query->whereHas('outlet', function ($q) use ($search) {
+                $q->where('name', 'like', '%'.$search.'%');
+            });
+        }
+
         if ($status) {
             $query->where('status', $status);
         } else {
             $query->where('status', TransactionStatus::Approval);
         }
 
-        return $query->orderBy('created_at', 'desc')
-            ->paginate($perPage)
+        if ($startDate) {
+            $query->where('date', '>=', $startDate);
+        }
+
+        if ($endDate) {
+            $query->where('date', '<=', $endDate);
+        }
+
+        if ($sortBy) {
+            if ($sortBy === 'outlet') {
+                $query->join('outlets', 'transactions.outlet_id', '=', 'outlets.id')
+                    ->orderBy('outlets.name', $sortDirection === 'desc' ? 'desc' : 'asc')
+                    ->select('transactions.*');
+            } elseif ($sortBy === 'spg') {
+                $query->join('users', 'transactions.created_by', '=', 'users.id')
+                    ->orderBy('users.name', $sortDirection === 'desc' ? 'desc' : 'asc')
+                    ->select('transactions.*');
+            } elseif ($sortBy === 'time') {
+                $query->orderBy('date', $sortDirection === 'desc' ? 'desc' : 'asc');
+            } else {
+                $query->orderBy($sortBy, $sortDirection === 'desc' ? 'desc' : 'asc');
+            }
+        } else {
+            $query->orderBy('created_at', 'desc');
+        }
+
+        return $query->paginate($perPage)
             ->withQueryString();
     }
 

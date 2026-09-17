@@ -338,7 +338,7 @@ export default function Show({ transaction, chairs }: ShowProps) {
                     <div className="rounded-md bg-red-50 p-4 border border-red-200">
                         <div className="flex">
                             <div className="ml-3">
-                                <h3 className="text-sm font-medium text-red-800">Catatan Revisi Supervisor</h3>
+                                <h3 className="text-sm font-medium text-red-800">Supervisor Revision Notes</h3>
                                 <div className="mt-2 text-sm text-red-700">
                                     <p>{transaction.supervisor_notes}</p>
                                 </div>
@@ -350,7 +350,7 @@ export default function Show({ transaction, chairs }: ShowProps) {
                     <div className="rounded-md bg-red-50 p-4 border border-red-200">
                         <div className="flex">
                             <div className="ml-3">
-                                <h3 className="text-sm font-medium text-red-800">Catatan Revisi Admin</h3>
+                                <h3 className="text-sm font-medium text-red-800">Admin Revision Notes</h3>
                                 <div className="mt-2 text-sm text-red-700">
                                     <p>{transaction.admin_notes}</p>
                                 </div>
