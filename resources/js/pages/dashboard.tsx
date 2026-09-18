@@ -89,6 +89,7 @@ export default function Dashboard({
             preserveState: true, 
             preserveScroll: true,
             replace: true,
+            showProgress: false,
             only: ['revenueChartData', 'filters'],
             onStart: () => setIsFiltering(true),
             onFinish: () => setIsFiltering(false)

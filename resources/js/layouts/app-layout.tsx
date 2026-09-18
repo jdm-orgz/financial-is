@@ -15,7 +15,7 @@ export default function AppLayout({
             const channel = window.Echo.private('app-updates');
             
             channel.listen('DataUpdated', () => {
-                router.reload();
+                router.reload({ preserveScroll: true, preserveState: true, showProgress: false });
             });
             
             return () => {
