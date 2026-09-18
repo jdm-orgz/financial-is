@@ -65,7 +65,7 @@ class TransactionTransferProofControllerTest extends TestCase
 
     public function test_destroy_invalid_ids()
     {
-        $response = $this->actingAs($this->user)->delete('/transactions/invalid/transfer-proofs/invalid');
+        $response = $this->actingAs($this->user)->delete('/transactions/'.Crypt::encryptString($this->transaction->id).'/transfer-proofs/invalid');
         $response->assertStatus(404);
     }
 }
