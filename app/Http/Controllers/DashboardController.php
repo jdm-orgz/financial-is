@@ -4,21 +4,20 @@ namespace App\Http\Controllers;
 
 use App\Domain\Outlet\Models\Chair;
 use App\Domain\Outlet\Models\Outlet;
+use App\Domain\Transaction\Models\Transaction;
 use App\Domain\Transaction\Models\TransactionDailyIncome;
-use App\Domain\Transaction\Models\TransactionReplacementRealization;
 use App\Domain\UserAccess\Models\Role;
 use App\Domain\UserAccess\Models\User;
 use App\Enums\TransactionStatus;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
-use Inertia\Inertia;
 
 class DashboardController extends Controller
 {
     private function getDirectorySize(string $path): int
     {
         $size = 0;
-        if (!File::exists($path) || !File::isDirectory($path)) {
+        if (! File::exists($path) || ! File::isDirectory($path)) {
             return $size;
         }
 
@@ -28,128 +27,196 @@ class DashboardController extends Controller
 
         return $size;
     }
+
     /**
      * Handle the incoming request.
      */
     public function __invoke(Request $request)
     {
+        $userRole = $request->user()->role->name;
         $today = now()->format('Y-m-d');
         $yesterday = now()->subDay()->format('Y-m-d');
         $currentMonth = now()->month;
         $currentYear = now()->year;
 
-        $spgRole = Role::where('name', 'spg')->first();
-        $supervisorRole = Role::where('name', 'supervisor')->first();
+        $data = [
+            'userRole' => $userRole,
+        ];
 
-        $spgActiveCount = $spgRole ? User::where('role_id', $spgRole->id)->where('is_active', '1')->count() : 0;
-        $spgInactiveCount = $spgRole ? User::where('role_id', $spgRole->id)->where('is_active', '0')->count() : 0;
+        if ($userRole === 'super_admin') {
+            $spgRole = Role::where('name', 'spg')->first();
+            $supervisorRole = Role::where('name', 'supervisor')->first();
 
-        $supervisorActiveCount = $supervisorRole ? User::where('role_id', $supervisorRole->id)->where('is_active', '1')->count() : 0;
-        $supervisorInactiveCount = $supervisorRole ? User::where('role_id', $supervisorRole->id)->where('is_active', '0')->count() : 0;
+            $spgActiveCount = $spgRole ? User::where('role_id', $spgRole->id)->where('is_active', '1')->count() : 0;
+            $spgInactiveCount = $spgRole ? User::where('role_id', $spgRole->id)->where('is_active', '0')->count() : 0;
 
-        $revenueYesterday = TransactionDailyIncome::join('transactions', 'transaction_daily_incomes.transaction_id', '=', 'transactions.id')
-            ->where('transactions.date', $yesterday)
-            ->where('transactions.status', TransactionStatus::Done->value)
-            ->sum('transaction_daily_incomes.amount');
+            $supervisorActiveCount = $supervisorRole ? User::where('role_id', $supervisorRole->id)->where('is_active', '1')->count() : 0;
+            $supervisorInactiveCount = $supervisorRole ? User::where('role_id', $supervisorRole->id)->where('is_active', '0')->count() : 0;
 
-        $revenueToday = TransactionDailyIncome::join('transactions', 'transaction_daily_incomes.transaction_id', '=', 'transactions.id')
-            ->where('transactions.date', $today)
-            ->where('transactions.status', TransactionStatus::Done->value)
-            ->sum('transaction_daily_incomes.amount');
+            $revenueYesterday = TransactionDailyIncome::join('transactions', 'transaction_daily_incomes.transaction_id', '=', 'transactions.id')
+                ->where('transactions.date', $yesterday)
+                ->where('transactions.status', TransactionStatus::Done->value)
+                ->sum('transaction_daily_incomes.amount');
 
-        $topOutletRevenue = Outlet::select('outlets.name')
-            ->join('transactions', 'outlets.id', '=', 'transactions.outlet_id')
-            ->join('transaction_daily_incomes', 'transactions.id', '=', 'transaction_daily_incomes.transaction_id')
-            ->whereMonth('transactions.date', $currentMonth)
-            ->whereYear('transactions.date', $currentYear)
-            ->where('transactions.status', TransactionStatus::Done->value)
-            ->groupBy('outlets.id', 'outlets.name')
-            ->orderByRaw('SUM(transaction_daily_incomes.amount) DESC')
-            ->first();
+            $revenueToday = TransactionDailyIncome::join('transactions', 'transaction_daily_incomes.transaction_id', '=', 'transactions.id')
+                ->where('transactions.date', $today)
+                ->where('transactions.status', TransactionStatus::Done->value)
+                ->sum('transaction_daily_incomes.amount');
 
-        $topOutletBrokenChair = Outlet::select('outlets.name')
-            ->join('transactions', 'outlets.id', '=', 'transactions.outlet_id')
-            ->join('transaction_replacement_realizations', 'transactions.id', '=', 'transaction_replacement_realizations.transaction_id')
-            ->whereMonth('transactions.date', $currentMonth)
-            ->whereYear('transactions.date', $currentYear)
-            ->where('transactions.status', TransactionStatus::Done->value)
-            ->groupBy('outlets.id', 'outlets.name')
-            ->orderByRaw('COUNT(transaction_replacement_realizations.id) DESC')
-            ->first();
+            $topOutletRevenue = Outlet::select('outlets.name')
+                ->join('transactions', 'outlets.id', '=', 'transactions.outlet_id')
+                ->join('transaction_daily_incomes', 'transactions.id', '=', 'transaction_daily_incomes.transaction_id')
+                ->whereMonth('transactions.date', $currentMonth)
+                ->whereYear('transactions.date', $currentYear)
+                ->where('transactions.status', TransactionStatus::Done->value)
+                ->groupBy('outlets.id', 'outlets.name')
+                ->orderByRaw('SUM(transaction_daily_incomes.amount) DESC')
+                ->first();
 
-        $topChairRevenue = Chair::select('chairs.name', 'outlets.name as outlet_name')
-            ->join('outlets', 'chairs.outlet_id', '=', 'outlets.id')
-            ->join('transaction_daily_incomes', 'chairs.id', '=', 'transaction_daily_incomes.chair_id')
-            ->join('transactions', 'transaction_daily_incomes.transaction_id', '=', 'transactions.id')
-            ->whereMonth('transactions.date', $currentMonth)
-            ->whereYear('transactions.date', $currentYear)
-            ->where('transactions.status', TransactionStatus::Done->value)
-            ->groupBy('chairs.id', 'chairs.name', 'outlets.name')
-            ->orderByRaw('SUM(transaction_daily_incomes.amount) DESC')
-            ->first();
+            $topOutletBrokenChair = Outlet::select('outlets.name')
+                ->join('transactions', 'outlets.id', '=', 'transactions.outlet_id')
+                ->join('transaction_replacement_realizations', 'transactions.id', '=', 'transaction_replacement_realizations.transaction_id')
+                ->whereMonth('transactions.date', $currentMonth)
+                ->whereYear('transactions.date', $currentYear)
+                ->where('transactions.status', TransactionStatus::Done->value)
+                ->groupBy('outlets.id', 'outlets.name')
+                ->orderByRaw('COUNT(transaction_replacement_realizations.id) DESC')
+                ->first();
 
-        $topBrokenChair = Chair::select('chairs.name', 'outlets.name as outlet_name')
-            ->join('outlets', 'chairs.outlet_id', '=', 'outlets.id')
-            ->join('transaction_replacement_realizations', 'chairs.id', '=', 'transaction_replacement_realizations.problem_chair_id')
-            ->join('transactions', 'transaction_replacement_realizations.transaction_id', '=', 'transactions.id')
-            ->whereMonth('transactions.date', $currentMonth)
-            ->whereYear('transactions.date', $currentYear)
-            ->where('transactions.status', TransactionStatus::Done->value)
-            ->groupBy('chairs.id', 'chairs.name', 'outlets.name')
-            ->orderByRaw('COUNT(transaction_replacement_realizations.id) DESC')
-            ->first();
+            $topChairRevenue = Chair::select('chairs.name', 'outlets.name as outlet_name')
+                ->join('outlets', 'chairs.outlet_id', '=', 'outlets.id')
+                ->join('transaction_daily_incomes', 'chairs.id', '=', 'transaction_daily_incomes.chair_id')
+                ->join('transactions', 'transaction_daily_incomes.transaction_id', '=', 'transactions.id')
+                ->whereMonth('transactions.date', $currentMonth)
+                ->whereYear('transactions.date', $currentYear)
+                ->where('transactions.status', TransactionStatus::Done->value)
+                ->groupBy('chairs.id', 'chairs.name', 'outlets.name')
+                ->orderByRaw('SUM(transaction_daily_incomes.amount) DESC')
+                ->first();
 
-        $startDate = $request->query('start_date', now()->startOfMonth()->format('Y-m-d'));
-        $endDate = $request->query('end_date', now()->endOfMonth()->format('Y-m-d'));
+            $topBrokenChair = Chair::select('chairs.name', 'outlets.name as outlet_name')
+                ->join('outlets', 'chairs.outlet_id', '=', 'outlets.id')
+                ->join('transaction_replacement_realizations', 'chairs.id', '=', 'transaction_replacement_realizations.problem_chair_id')
+                ->join('transactions', 'transaction_replacement_realizations.transaction_id', '=', 'transactions.id')
+                ->whereMonth('transactions.date', $currentMonth)
+                ->whereYear('transactions.date', $currentYear)
+                ->where('transactions.status', TransactionStatus::Done->value)
+                ->groupBy('chairs.id', 'chairs.name', 'outlets.name')
+                ->orderByRaw('COUNT(transaction_replacement_realizations.id) DESC')
+                ->first();
 
-        $revenueChartData = TransactionDailyIncome::selectRaw('transactions.date, SUM(transaction_daily_incomes.amount) as total_revenue')
-            ->join('transactions', 'transaction_daily_incomes.transaction_id', '=', 'transactions.id')
-            ->whereBetween('transactions.date', [$startDate, $endDate])
-            ->where('transactions.status', TransactionStatus::Done->value)
-            ->groupBy('transactions.date')
-            ->orderBy('transactions.date')
-            ->get()
-            ->map(function ($item) {
-                return [
-                    'date' => $item->date,
-                    'total_revenue' => (float) $item->total_revenue,
-                ];
-            });
+            $startDate = $request->query('start_date', now()->startOfMonth()->format('Y-m-d'));
+            $endDate = $request->query('end_date', now()->endOfMonth()->format('Y-m-d'));
 
-        $mediaSize = $this->getDirectorySize(storage_path('app/public/proofs'));
+            $revenueChartData = TransactionDailyIncome::selectRaw('transactions.date, SUM(transaction_daily_incomes.amount) as total_revenue')
+                ->join('transactions', 'transaction_daily_incomes.transaction_id', '=', 'transactions.id')
+                ->whereBetween('transactions.date', [$startDate, $endDate])
+                ->where('transactions.status', TransactionStatus::Done->value)
+                ->groupBy('transactions.date')
+                ->orderBy('transactions.date')
+                ->get()
+                ->map(function ($item) {
+                    return [
+                        'date' => $item->date,
+                        'total_revenue' => (float) $item->total_revenue,
+                    ];
+                });
 
-        $rootTotalSpace = disk_total_space('/');
-        $rootFreeSpace = disk_free_space('/');
-        $usedSpace = $rootTotalSpace - $rootFreeSpace;
-        $systemSize = $usedSpace - $mediaSize;
+            $mediaSize = $this->getDirectorySize(storage_path('app/public/proofs'));
 
-        return inertia('dashboard', [
-            'totalUsers' => User::count(),
-            'totalRoles' => Role::count(),
-            'totalOutlets' => Outlet::count(),
-            'totalChairs' => Chair::count(),
-            'spgActiveCount' => $spgActiveCount,
-            'spgInactiveCount' => $spgInactiveCount,
-            'supervisorActiveCount' => $supervisorActiveCount,
-            'supervisorInactiveCount' => $supervisorInactiveCount,
-            'revenueYesterday' => (float) $revenueYesterday,
-            'revenueToday' => (float) $revenueToday,
-            'topOutletRevenue' => $topOutletRevenue ? $topOutletRevenue->name : null,
-            'topOutletBrokenChair' => $topOutletBrokenChair ? $topOutletBrokenChair->name : null,
-            'topChairRevenue' => $topChairRevenue ? $topChairRevenue->outlet_name . ' - ' . $topChairRevenue->name : null,
-            'topBrokenChair' => $topBrokenChair ? $topBrokenChair->outlet_name . ' - ' . $topBrokenChair->name : null,
-            'revenueChartData' => $revenueChartData,
-            'storage' => [
-                'total' => $rootTotalSpace,
-                'used' => $usedSpace,
-                'left' => $rootFreeSpace,
-                'media' => $mediaSize,
-                'system' => $systemSize,
-            ],
-            'filters' => [
-                'start_date' => $startDate,
-                'end_date' => $endDate,
-            ],
-        ]);
+            $rootTotalSpace = disk_total_space('/');
+            $rootFreeSpace = disk_free_space('/');
+            $usedSpace = $rootTotalSpace - $rootFreeSpace;
+            $systemSize = $usedSpace - $mediaSize;
+
+            $data = array_merge($data, [
+                'totalUsers' => User::count(),
+                'totalRoles' => Role::count(),
+                'totalOutlets' => Outlet::count(),
+                'totalChairs' => Chair::count(),
+                'spgActiveCount' => $spgActiveCount,
+                'spgInactiveCount' => $spgInactiveCount,
+                'supervisorActiveCount' => $supervisorActiveCount,
+                'supervisorInactiveCount' => $supervisorInactiveCount,
+                'revenueYesterday' => (float) $revenueYesterday,
+                'revenueToday' => (float) $revenueToday,
+                'topOutletRevenue' => $topOutletRevenue ? $topOutletRevenue->name : null,
+                'topOutletBrokenChair' => $topOutletBrokenChair ? $topOutletBrokenChair->name : null,
+                'topChairRevenue' => $topChairRevenue ? $topChairRevenue->outlet_name.' - '.$topChairRevenue->name : null,
+                'topBrokenChair' => $topBrokenChair ? $topBrokenChair->outlet_name.' - '.$topBrokenChair->name : null,
+                'revenueChartData' => $revenueChartData,
+                'storage' => [
+                    'total' => $rootTotalSpace,
+                    'used' => $usedSpace,
+                    'left' => $rootFreeSpace,
+                    'media' => $mediaSize,
+                    'system' => $systemSize,
+                ],
+                'filters' => [
+                    'start_date' => $startDate,
+                    'end_date' => $endDate,
+                ],
+            ]);
+        } elseif ($userRole === 'admin') {
+            $data['revenueYesterday'] = (float) TransactionDailyIncome::join('transactions', 'transaction_daily_incomes.transaction_id', '=', 'transactions.id')
+                ->where('transactions.date', $yesterday)
+                ->where('transactions.status', TransactionStatus::Done->value)
+                ->sum('transaction_daily_incomes.amount');
+
+            $data['revenueToday'] = (float) TransactionDailyIncome::join('transactions', 'transaction_daily_incomes.transaction_id', '=', 'transactions.id')
+                ->where('transactions.date', $today)
+                ->where('transactions.status', TransactionStatus::Done->value)
+                ->sum('transaction_daily_incomes.amount');
+
+            $data['totalTransaction'] = Transaction::count();
+            $data['transactionIncomplete'] = Transaction::whereIn('status', [
+                TransactionStatus::Draft->value,
+                TransactionStatus::Approval->value,
+                TransactionStatus::Correction->value,
+            ])->count();
+
+            $data['transactionNeedResponse'] = Transaction::whereIn('status', [
+                TransactionStatus::Comparing->value,
+                TransactionStatus::Compared->value,
+            ])->count();
+
+            $data['transactionDone'] = Transaction::where('status', TransactionStatus::Done->value)->count();
+        } elseif ($userRole === 'supervisor') {
+            $outletIds = $request->user()->outlets()->pluck('outlets.id')->toArray();
+            $query = Transaction::whereIn('outlet_id', $outletIds);
+
+            $data['totalTransaction'] = (clone $query)->count();
+            $data['transactionIncomplete'] = (clone $query)->whereIn('status', [
+                TransactionStatus::Draft->value,
+                TransactionStatus::Correction->value,
+                TransactionStatus::Comparing->value,
+                TransactionStatus::Compared->value,
+            ])->count();
+
+            $data['transactionNeedResponse'] = (clone $query)->whereIn('status', [
+                TransactionStatus::Approval->value,
+            ])->count();
+
+            $data['transactionDone'] = (clone $query)->where('status', TransactionStatus::Done->value)->count();
+        } elseif ($userRole === 'spg') {
+            $outletIds = $request->user()->outlets()->pluck('outlets.id')->toArray();
+            $query = Transaction::whereIn('outlet_id', $outletIds);
+
+            $data['totalTransaction'] = (clone $query)->count();
+            $data['transactionIncomplete'] = (clone $query)->whereIn('status', [
+                TransactionStatus::Approval->value,
+                TransactionStatus::Comparing->value,
+                TransactionStatus::Compared->value,
+            ])->count();
+
+            $data['transactionNeedResponse'] = (clone $query)->whereIn('status', [
+                TransactionStatus::Draft->value,
+                TransactionStatus::Correction->value,
+            ])->count();
+
+            $data['transactionDone'] = (clone $query)->where('status', TransactionStatus::Done->value)->count();
+        }
+
+        return inertia('dashboard', $data);
     }
 }
