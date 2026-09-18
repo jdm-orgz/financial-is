@@ -1,9 +1,7 @@
 <?php
 
-use App\Domain\Outlet\Models\Chair;
-use App\Domain\Outlet\Models\Outlet;
-use App\Domain\UserAccess\Models\Role;
-use App\Domain\UserAccess\Models\User;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\Gallery\GalleryController;
 use App\Http\Controllers\Master\AppConfigController;
 use App\Http\Controllers\Master\ChairController;
 use App\Http\Controllers\Master\LinkedOutletUserController;
@@ -21,7 +19,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', fn () => redirect()->route('login'))->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('dashboard', \App\Http\Controllers\DashboardController::class)->name('dashboard');
+    Route::get('dashboard', DashboardController::class)->name('dashboard');
 
     Route::middleware(['permission:master/*,*'])->group(function () {
         Route::resource('roles', RoleController::class)->except(['show']);
@@ -117,6 +115,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->middleware('transaction.access:admin,compared');
     });
 
+    // Gallery Routes
+    Route::middleware(['permission:gallery/*,*'])->group(function () {
+        Route::get('gallery', [GalleryController::class, 'index'])->name('gallery.index');
+        Route::post('gallery/download', [GalleryController::class, 'download'])->name('gallery.download');
+        Route::delete('gallery', [GalleryController::class, 'destroy'])->name('gallery.destroy');
+    });
 });
 
 require __DIR__.'/settings.php';

@@ -1,5 +1,5 @@
 import { Link, usePage } from '@inertiajs/react';
-import { LayoutGrid, Database } from 'lucide-react';
+import { LayoutGrid, Database, Images } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
@@ -90,6 +90,14 @@ export function AppSidebar() {
             title: 'Transactions',
             href: '/admin/transactions',
             icon: LayoutGrid,
+        });
+    }
+
+    if (permissions.gallery) {
+        mainNavItems.push({
+            title: 'Gallery',
+            href: '/gallery',
+            icon: Images,
         });
     }
 
