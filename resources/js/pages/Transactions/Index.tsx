@@ -126,7 +126,10 @@ export default function Index({
     };
 
     const renderSortIcon = (field: string) => {
-        if (filters.sort_by !== field) return <ArrowUpDown className="ml-2 h-4 w-4" />;
+        if (filters.sort_by !== field) {
+return <ArrowUpDown className="ml-2 h-4 w-4" />;
+}
+
         return filters.sort_direction === 'asc' ? <ArrowUp className="ml-2 h-4 w-4" /> : <ArrowDown className="ml-2 h-4 w-4" />;
     };
 

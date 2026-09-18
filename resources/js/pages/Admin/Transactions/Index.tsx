@@ -1,18 +1,10 @@
 import { Head, Link, router } from '@inertiajs/react';
 import { Eye, Pencil, Check, ChevronsUpDown } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { useState, useEffect } from 'react';
 import type { PaginationLink } from '@/components/pagination';
 import { Pagination } from '@/components/pagination';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
 import {
     Command,
     CommandEmpty,
@@ -21,11 +13,19 @@ import {
     CommandItem,
     CommandList,
 } from '@/components/ui/command';
+import { Input } from '@/components/ui/input';
 import {
     Popover,
     PopoverContent,
     PopoverTrigger,
 } from '@/components/ui/popover';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import {
     Table,
     TableBody,
@@ -34,8 +34,8 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import { cn } from '@/lib/utils';
 import type { Transaction } from '@/types/transaction';
-import { useState, useEffect } from 'react';
 
 interface IndexProps {
     transactions: {
@@ -78,6 +78,7 @@ export default function Index({
         const timer = setTimeout(() => {
             setDebouncedSearch(search);
         }, 500);
+
         return () => clearTimeout(timer);
     }, [search]);
 

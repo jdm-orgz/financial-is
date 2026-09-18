@@ -1,10 +1,10 @@
 import { Head, Link, useForm, router } from '@inertiajs/react';
 import { ChevronLeft, CheckCircle, XCircle, Image as ImageIcon, PlayCircle } from 'lucide-react';
 import { useState } from 'react';
+import { ConfirmModal } from '@/components/confirm-modal';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { ConfirmModal } from '@/components/confirm-modal';
 import {
     Dialog,
     DialogContent,
@@ -319,7 +319,9 @@ export default function Result({ transaction, comparison }: ResultProps) {
             <ConfirmModal
                 isOpen={confirmState.isOpen}
                 onOpenChange={(open) => {
-                    if (!open) setConfirmState(prev => ({ ...prev, isOpen: false }));
+                    if (!open) {
+setConfirmState(prev => ({ ...prev, isOpen: false }));
+}
                 }}
                 onConfirm={() => {
                     setConfirmState(prev => ({ ...prev, isOpen: false }));

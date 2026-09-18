@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui/button';
+import type {ButtonProps} from '@/components/ui/button';
 import {
     Dialog,
     DialogClose,
@@ -7,7 +8,6 @@ import {
     DialogFooter,
     DialogTitle,
 } from '@/components/ui/dialog';
-import { type ButtonProps } from '@/components/ui/button';
 
 interface ConfirmModalProps {
     isOpen: boolean;
