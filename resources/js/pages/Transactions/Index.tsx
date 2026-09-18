@@ -135,7 +135,7 @@ export default function Index({
             <Head title="Transactions" />
             <div className="flex h-full flex-1 flex-col gap-4 p-4">
                 <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                    <h1 className="text-2xl font-bold">Transactions</h1>
+                    <h1 className="text-2xl font-bold">Create Transactions</h1>
                     <div className="flex flex-wrap items-center gap-4">
                         <Input
                             type="search"
@@ -307,6 +307,6 @@ export default function Index({
 
 Index.layout = {
     breadcrumbs: [
-        { title: 'Transactions', href: '/transactions' },
+        { title: 'Create Transactions', href: '/transactions' },
     ],
 };

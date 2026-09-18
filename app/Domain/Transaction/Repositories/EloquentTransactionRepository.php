@@ -8,14 +8,17 @@ use Illuminate\Pagination\LengthAwarePaginator;
 
 class EloquentTransactionRepository implements TransactionRepositoryInterface
 {
-    public function getPaginatedForSpg(string $spgUserId, int $perPage = 10, ?string $search = null, ?string $status = null, ?string $sortBy = null, string $sortDirection = 'asc', ?string $startDate = null, ?string $endDate = null): LengthAwarePaginator
+    public function getPaginatedForSpg(?string $spgUserId, int $perPage = 10, ?string $search = null, ?string $status = null, ?string $sortBy = null, string $sortDirection = 'asc', ?string $startDate = null, ?string $endDate = null): LengthAwarePaginator
     {
-        $query = Transaction::with('outlet')
-            ->where('created_by', $spgUserId);
+        $query = Transaction::with('outlet');
+
+        if ($spgUserId) {
+            $query->where('created_by', $spgUserId);
+        }
 
         if ($search) {
             $query->whereHas('outlet', function ($q) use ($search) {
-                $q->where('name', 'ilike', '%'.$search.'%');
+                $q->whereRaw('LOWER(name) LIKE ?', ['%'.strtolower($search).'%']);
             });
         }
 
@@ -28,7 +31,7 @@ class EloquentTransactionRepository implements TransactionRepositoryInterface
         }
 
         if ($endDate) {
-            $query->where('date', '<=', $endDate . ' 23:59:59');
+            $query->where('date', '<=', $endDate.' 23:59:59');
         }
 
         if ($sortBy) {
@@ -49,18 +52,21 @@ class EloquentTransactionRepository implements TransactionRepositoryInterface
             ->withQueryString();
     }
 
-    public function getPaginatedForSupervisor(string $supervisorId, int $perPage = 10, ?string $search = null, ?string $status = null, ?string $sortBy = null, string $sortDirection = 'asc', ?string $startDate = null, ?string $endDate = null, ?string $spgId = null): LengthAwarePaginator
+    public function getPaginatedForSupervisor(?string $supervisorId, int $perPage = 10, ?string $search = null, ?string $status = null, ?string $sortBy = null, string $sortDirection = 'asc', ?string $startDate = null, ?string $endDate = null, ?string $spgId = null): LengthAwarePaginator
     {
-        $query = Transaction::with('outlet', 'createdBy')
-            ->whereHas('outlet', function ($q) use ($supervisorId) {
+        $query = Transaction::with('outlet', 'createdBy');
+
+        if ($supervisorId) {
+            $query->whereHas('outlet', function ($q) use ($supervisorId) {
                 $q->whereHas('users', function ($q2) use ($supervisorId) {
                     $q2->where('users.id', $supervisorId);
                 });
             });
+        }
 
         if ($search) {
             $query->whereHas('outlet', function ($q) use ($search) {
-                $q->where('name', 'ilike', '%'.$search.'%');
+                $q->whereRaw('LOWER(name) LIKE ?', ['%'.strtolower($search).'%']);
             });
         }
 
@@ -75,7 +81,7 @@ class EloquentTransactionRepository implements TransactionRepositoryInterface
         }
 
         if ($endDate) {
-            $query->where('date', '<=', $endDate . ' 23:59:59');
+            $query->where('date', '<=', $endDate.' 23:59:59');
         }
 
         if ($spgId && $spgId !== 'all') {
@@ -110,7 +116,7 @@ class EloquentTransactionRepository implements TransactionRepositoryInterface
 
         if ($search) {
             $query->whereHas('outlet', function ($q) use ($search) {
-                $q->where('name', 'ilike', '%'.$search.'%');
+                $q->whereRaw('LOWER(name) LIKE ?', ['%'.strtolower($search).'%']);
             });
         }
 
@@ -123,7 +129,7 @@ class EloquentTransactionRepository implements TransactionRepositoryInterface
         }
 
         if ($endDate) {
-            $query->where('date', '<=', $endDate . ' 23:59:59');
+            $query->where('date', '<=', $endDate.' 23:59:59');
         }
 
         if ($spgId && $spgId !== 'all') {

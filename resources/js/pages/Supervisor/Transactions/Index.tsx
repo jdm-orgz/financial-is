@@ -118,7 +118,7 @@ export default function Index({
     const handleStatusFilter = (value: string) => {
         router.get(
             window.location.pathname,
-            { ...filters, status: value === 'all' ? undefined : value, search, per_page, start_date: startDate, end_date: endDate },
+            { ...filters, status: value, search, per_page, start_date: startDate, end_date: endDate },
             { preserveState: true, preserveScroll: true },
         );
     };
@@ -150,7 +150,7 @@ export default function Index({
             <Head title="Transaction Approvals" />
             <div className="flex h-full flex-1 flex-col gap-4 p-4">
                 <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                    <h1 className="text-2xl font-bold">Transactions Pending Approval</h1>
+                    <h1 className="text-2xl font-bold">Transactions Approval</h1>
                     <div className="flex flex-wrap items-center gap-4">
                         <Input
                             type="search"
@@ -363,7 +363,6 @@ export default function Index({
 
 Index.layout = {
     breadcrumbs: [
-        { title: 'Supervisor', href: '#' },
-        { title: 'Transaction Approvals', href: '/supervisor/transactions' },
+        { title: 'Transactions Approval', href: '/supervisor/transactions' },
     ],
 };

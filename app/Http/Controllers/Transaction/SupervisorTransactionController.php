@@ -22,7 +22,7 @@ class SupervisorTransactionController extends Controller
      */
     public function index(): Response
     {
-        $status = request('status');
+        $status = request('status', 'approval');
         $search = request('search');
         $sortBy = request('sort_by');
         $sortDirection = request('sort_direction', 'asc');
@@ -39,7 +39,9 @@ class SupervisorTransactionController extends Controller
         }
 
         $perPage = (int) request('per_page', 10);
-        $supervisorId = auth()->id();
+        $user = auth()->user();
+        $isSuperAdmin = $user->role->name === 'super_admin';
+        $supervisorId = $isSuperAdmin ? null : $user->id;
 
         $transactions = $this->transactionRepository->getPaginatedForSupervisor(
             $supervisorId,
@@ -53,17 +55,24 @@ class SupervisorTransactionController extends Controller
             $decryptedSpgId
         );
 
-        $spgs = User::whereHas('role', function ($q) {
+        $spgsQuery = User::whereHas('role', function ($q) {
             $q->where('name', 'spg');
-        })->whereHas('outlets', function ($q) use ($supervisorId) {
-            $q->whereHas('users', function ($q2) use ($supervisorId) {
-                $q2->where('users.id', $supervisorId);
+        });
+
+        if (! $isSuperAdmin) {
+            $spgsQuery->whereHas('outlets', function ($q) use ($supervisorId) {
+                $q->whereHas('users', function ($q2) use ($supervisorId) {
+                    $q2->where('users.id', $supervisorId);
+                });
             });
-        })->get(['id', 'name', 'username']);
+        }
+
+        $spgs = $spgsQuery->get(['id', 'name', 'username']);
 
         return Inertia::render('Supervisor/Transactions/Index', [
             'transactions' => $transactions,
-            'filters' => array_merge(request()->only(['status', 'search', 'sort_by', 'sort_direction', 'spg_username']), [
+            'filters' => array_merge(request()->only(['search', 'sort_by', 'sort_direction', 'spg_username']), [
+                'status' => $status,
                 'start_date' => $startDate,
                 'end_date' => $endDate,
             ]),

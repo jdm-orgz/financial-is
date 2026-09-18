@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Transaction;
 
+use App\Domain\Outlet\Models\Outlet;
 use App\Domain\Outlet\Repositories\ChairRepositoryInterface;
 use App\Domain\Transaction\Repositories\TransactionRepositoryInterface;
 use App\Enums\TransactionStatus;
@@ -32,8 +33,11 @@ class TransactionController extends Controller
         $endDate = request('end_date', now()->format('Y-m-d'));
         $perPage = (int) request('per_page', 10);
 
+        $user = auth()->user();
+        $isSuperAdmin = $user->role->name === 'super_admin';
+
         $transactions = $this->transactionRepository->getPaginatedForSpg(
-            auth()->id(),
+            $isSuperAdmin ? null : $user->id,
             $perPage,
             $search,
             $status,
@@ -59,7 +63,12 @@ class TransactionController extends Controller
      */
     public function create(): Response
     {
-        $outlets = auth()->user()->outlets()->where('linked_outlets_users.is_active', '1')->get();
+        $user = auth()->user();
+        if ($user->role->name === 'super_admin') {
+            $outlets = Outlet::where('is_active', '1')->get();
+        } else {
+            $outlets = $user->outlets()->where('linked_outlets_users.is_active', '1')->get();
+        }
 
         return Inertia::render('Transactions/Create', [
             'outlets' => $outlets,

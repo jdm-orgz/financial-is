@@ -417,7 +417,6 @@ export default function Index({
 
 Index.layout = {
     breadcrumbs: [
-        { title: 'Admin', href: '#' },
         { title: 'Transactions', href: '/admin/transactions' },
     ],
 };

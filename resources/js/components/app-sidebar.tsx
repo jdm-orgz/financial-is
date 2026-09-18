@@ -71,7 +71,7 @@ export function AppSidebar() {
 
     if (permissions.transaction) {
         mainNavItems.push({
-            title: 'Transactions',
+            title: 'Create Transactions',
             href: '/transactions',
             icon: LayoutGrid, // You can change the icon later
         });
@@ -79,7 +79,7 @@ export function AppSidebar() {
 
     if (permissions.supervisor) {
         mainNavItems.push({
-            title: 'Transaction Approvals',
+            title: 'Transactions Approval',
             href: '/supervisor/transactions',
             icon: LayoutGrid,
         });
