@@ -35,6 +35,17 @@ class SupervisorTransactionControllerTest extends TestCase
         $response->assertStatus(200);
     }
 
+    public function test_index_with_spg_username_filter()
+    {
+        $spgUser = User::factory()->create(['username' => 'spg123']);
+        $response = $this->actingAs($this->supervisor)->get('/supervisor/transactions?spg_username=spg123');
+        $response->assertStatus(200);
+
+        // Test non-existent user
+        $response = $this->actingAs($this->supervisor)->get('/supervisor/transactions?spg_username=nonexistent');
+        $response->assertStatus(200);
+    }
+
     public function test_show()
     {
         $response = $this->actingAs($this->supervisor)->get('/supervisor/transactions/'.Crypt::encryptString($this->transaction->id));

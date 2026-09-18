@@ -36,6 +36,19 @@ class AdminTransactionControllerTest extends TestCase
         $response->assertStatus(200);
     }
 
+    public function test_index_with_filters()
+    {
+        $spgUser = User::factory()->create(['username' => 'spg123']);
+        $supervisorUser = User::factory()->create(['username' => 'super123']);
+
+        $response = $this->actingAs($this->admin)->get('/admin/transactions?spg_username=spg123&supervisor_username=super123&start_date=2026-09-01&end_date=2026-09-30');
+        $response->assertStatus(200);
+
+        // Test non-existent users
+        $response = $this->actingAs($this->admin)->get('/admin/transactions?spg_username=nonexistent&supervisor_username=nonexistent');
+        $response->assertStatus(200);
+    }
+
     public function test_show_compare()
     {
         $response = $this->actingAs($this->admin)->get('/admin/transactions/'.Crypt::encryptString($this->transaction->id).'/compare');

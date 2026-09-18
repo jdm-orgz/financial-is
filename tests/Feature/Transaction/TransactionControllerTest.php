@@ -41,6 +41,14 @@ class TransactionControllerTest extends TestCase
         $response->assertStatus(200);
     }
 
+    public function test_create_as_super_admin()
+    {
+        $superAdminRole = \App\Domain\UserAccess\Models\Role::factory()->create(['name' => 'super_admin']);
+        $superAdmin = User::factory()->create(['role_id' => $superAdminRole->id]);
+        $response = $this->actingAs($superAdmin)->get('/transactions/create');
+        $response->assertStatus(200);
+    }
+
     public function test_store_invalid_id()
     {
         $response = $this->actingAs($this->user)->post('/transactions', [
