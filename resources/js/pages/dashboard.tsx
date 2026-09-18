@@ -418,9 +418,9 @@ export default function Dashboard({
                                     <span className="text-sm font-medium text-neutral-500 dark:text-neutral-400">Incomplete</span>
                                     <span className="text-2xl font-bold">{transactionIncomplete}</span>
                                 </div>
-                                <div className={`flex flex-col justify-center rounded-lg bg-neutral-100 p-4 dark:bg-neutral-800/50 ${(transactionNeedResponse ?? 0) > 0 ? 'animate-pulse bg-red-100 dark:bg-red-900/20' : ''}`}>
+                                <div className={`flex flex-col justify-center rounded-lg bg-neutral-100 p-4 dark:bg-neutral-800/50 ${(transactionNeedResponse ?? 0) > 0 ? 'animate-pulse bg-yellow-100 dark:bg-yellow-900/20' : ''}`}>
                                     <span className="text-sm font-medium text-neutral-500 dark:text-neutral-400">Need Response</span>
-                                    <span className={`text-2xl font-bold ${(transactionNeedResponse ?? 0) > 0 ? 'text-red-600 dark:text-red-400' : ''}`}>{transactionNeedResponse}</span>
+                                    <span className={`text-2xl font-bold ${(transactionNeedResponse ?? 0) > 0 ? 'text-yellow-600 dark:text-yellow-400' : ''}`}>{transactionNeedResponse}</span>
                                 </div>
                                 <div className="flex flex-col justify-center rounded-lg bg-neutral-100 p-4 dark:bg-neutral-800/50">
                                     <span className="text-sm font-medium text-neutral-500 dark:text-neutral-400">Done</span>
@@ -444,9 +444,9 @@ export default function Dashboard({
                                     <span className="text-sm font-medium text-neutral-500 dark:text-neutral-400">Incomplete</span>
                                     <span className="text-2xl font-bold">{transactionIncomplete}</span>
                                 </div>
-                                <div className={`flex flex-col justify-center rounded-lg bg-neutral-100 p-4 dark:bg-neutral-800/50 ${(transactionNeedResponse ?? 0) > 0 ? 'animate-pulse bg-red-100 dark:bg-red-900/20' : ''}`}>
+                                <div className={`flex flex-col justify-center rounded-lg bg-neutral-100 p-4 dark:bg-neutral-800/50 ${(transactionNeedResponse ?? 0) > 0 ? 'animate-pulse bg-yellow-100 dark:bg-yellow-900/20' : ''}`}>
                                     <span className="text-sm font-medium text-neutral-500 dark:text-neutral-400">Need Response</span>
-                                    <span className={`text-2xl font-bold ${(transactionNeedResponse ?? 0) > 0 ? 'text-red-600 dark:text-red-400' : ''}`}>{transactionNeedResponse}</span>
+                                    <span className={`text-2xl font-bold ${(transactionNeedResponse ?? 0) > 0 ? 'text-yellow-600 dark:text-yellow-400' : ''}`}>{transactionNeedResponse}</span>
                                 </div>
                                 <div className="flex flex-col justify-center rounded-lg bg-neutral-100 p-4 dark:bg-neutral-800/50">
                                     <span className="text-sm font-medium text-neutral-500 dark:text-neutral-400">Done</span>
