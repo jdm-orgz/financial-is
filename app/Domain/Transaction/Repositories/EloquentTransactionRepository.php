@@ -15,7 +15,7 @@ class EloquentTransactionRepository implements TransactionRepositoryInterface
 
         if ($search) {
             $query->whereHas('outlet', function ($q) use ($search) {
-                $q->where('name', 'like', '%'.$search.'%');
+                $q->where('name', 'ilike', '%'.$search.'%');
             });
         }
 
@@ -60,7 +60,7 @@ class EloquentTransactionRepository implements TransactionRepositoryInterface
 
         if ($search) {
             $query->whereHas('outlet', function ($q) use ($search) {
-                $q->where('name', 'like', '%'.$search.'%');
+                $q->where('name', 'ilike', '%'.$search.'%');
             });
         }
 
@@ -110,7 +110,7 @@ class EloquentTransactionRepository implements TransactionRepositoryInterface
 
         if ($search) {
             $query->whereHas('outlet', function ($q) use ($search) {
-                $q->where('name', 'like', '%'.$search.'%');
+                $q->where('name', 'ilike', '%'.$search.'%');
             });
         }
 

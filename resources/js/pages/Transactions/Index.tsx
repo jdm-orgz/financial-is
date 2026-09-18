@@ -134,21 +134,21 @@ export default function Index({
         <>
             <Head title="Transactions" />
             <div className="flex h-full flex-1 flex-col gap-4 p-4">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                     <h1 className="text-2xl font-bold">Transactions</h1>
-                    <div className="flex items-center gap-4">
+                    <div className="flex flex-wrap items-center gap-4">
                         <Input
                             type="search"
                             placeholder="Search outlet..."
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
-                            className="w-64"
+                            className="w-full sm:w-64"
                         />
                         <Select
                             value={filters.status || 'all'}
                             onValueChange={handleStatusFilter}
                         >
-                            <SelectTrigger className="w-48">
+                            <SelectTrigger className="w-full sm:w-48">
                                 <SelectValue placeholder="Filter Status" />
                             </SelectTrigger>
                             <SelectContent>
@@ -160,7 +160,7 @@ export default function Index({
                                 ))}
                             </SelectContent>
                         </Select>
-                        <div className="flex items-center gap-2 border rounded-md px-2 py-1">
+                        <div className="flex flex-wrap items-center gap-2 border rounded-md px-2 py-1 w-full sm:w-auto">
                             <span className="text-sm text-muted-foreground whitespace-nowrap">From:</span>
                             <Input
                                 type="date"
@@ -168,7 +168,7 @@ export default function Index({
                                 onChange={(e) => setStartDate(e.target.value)}
                                 onClick={(e) => 'showPicker' in e.currentTarget && (e.currentTarget as HTMLInputElement).showPicker()}
                                 onKeyDown={(e) => e.preventDefault()}
-                                className="w-36 h-8 border-none focus-visible:ring-0 shadow-none px-1 cursor-pointer"
+                                className="w-full sm:w-36 h-8 border-none focus-visible:ring-0 shadow-none px-1 cursor-pointer"
                             />
                             <span className="text-sm text-muted-foreground whitespace-nowrap">To:</span>
                             <Input
@@ -178,9 +178,9 @@ export default function Index({
                                 onChange={(e) => setEndDate(e.target.value)}
                                 onClick={(e) => 'showPicker' in e.currentTarget && (e.currentTarget as HTMLInputElement).showPicker()}
                                 onKeyDown={(e) => e.preventDefault()}
-                                className="w-36 h-8 border-none focus-visible:ring-0 shadow-none px-1 cursor-pointer"
+                                className="w-full sm:w-36 h-8 border-none focus-visible:ring-0 shadow-none px-1 cursor-pointer"
                             />
-                            <Button size="sm" variant="secondary" onClick={handleDateFilter} className="h-7 px-2">Apply</Button>
+                            <Button size="sm" variant="secondary" onClick={handleDateFilter} className="h-7 px-2 w-full sm:w-auto">Apply</Button>
                         </div>
                         <Button asChild>
                             <Link href="/transactions/create">

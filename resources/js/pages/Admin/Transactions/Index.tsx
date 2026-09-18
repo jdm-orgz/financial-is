@@ -1,5 +1,6 @@
 import { Head, Link, router } from '@inertiajs/react';
-import { Eye, Pencil } from 'lucide-react';
+import { Eye, Pencil, Check, ChevronsUpDown } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import type { PaginationLink } from '@/components/pagination';
 import { Pagination } from '@/components/pagination';
 import { Badge } from '@/components/ui/badge';
@@ -12,6 +13,19 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import {
+    Command,
+    CommandEmpty,
+    CommandGroup,
+    CommandInput,
+    CommandItem,
+    CommandList,
+} from '@/components/ui/command';
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from '@/components/ui/popover';
 import {
     Table,
     TableBody,
@@ -57,6 +71,8 @@ export default function Index({
     const [debouncedSearch, setDebouncedSearch] = useState(search);
     const [startDate, setStartDate] = useState(filters.start_date || '');
     const [endDate, setEndDate] = useState(filters.end_date || '');
+    const [spgOpen, setSpgOpen] = useState(false);
+    const [supervisorOpen, setSupervisorOpen] = useState(false);
 
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -135,52 +151,137 @@ export default function Index({
         <>
             <Head title="Transactions (Admin)" />
             <div className="flex h-full flex-1 flex-col gap-4 p-4">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                     <h1 className="text-2xl font-bold">Transactions</h1>
-                    <div className="flex items-center gap-4">
+                    <div className="flex flex-wrap items-center gap-4">
                         <Input
                             type="search"
                             placeholder="Search outlet..."
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
+                            className="w-full sm:w-auto"
                         />
-                        <Select
-                            value={filters.spg_username || 'all'}
-                            onValueChange={handleSpgFilter}
-                        >
-                            <SelectTrigger className="w-48">
-                                <SelectValue placeholder="Filter SPG" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="all">All SPG</SelectItem>
-                                {spgs.map((spg) => (
-                                    <SelectItem key={spg.username} value={spg.username}>
-                                        {spg.name}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                        <Select
-                            value={filters.supervisor_username || 'all'}
-                            onValueChange={handleSupervisorFilter}
-                        >
-                            <SelectTrigger className="w-48">
-                                <SelectValue placeholder="Filter Supervisor" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="all">All Supervisor</SelectItem>
-                                {supervisors.map((supervisor) => (
-                                    <SelectItem key={supervisor.username} value={supervisor.username}>
-                                        {supervisor.name}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
+                        <Popover open={spgOpen} onOpenChange={setSpgOpen}>
+                            <PopoverTrigger asChild>
+                                <Button
+                                    variant="outline"
+                                    role="combobox"
+                                    aria-expanded={spgOpen}
+                                    className="w-full sm:w-48 justify-between font-normal bg-background"
+                                >
+                                    {filters.spg_username
+                                        ? spgs.find((spg) => spg.username === filters.spg_username)?.name
+                                        : "Filter SPG"}
+                                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-full sm:w-48 p-0">
+                                <Command>
+                                    <CommandInput placeholder="Search SPG..." />
+                                    <CommandList>
+                                        <CommandEmpty>No SPG found.</CommandEmpty>
+                                        <CommandGroup>
+                                            <CommandItem
+                                                value="all"
+                                                onSelect={() => {
+                                                    handleSpgFilter('all');
+                                                    setSpgOpen(false);
+                                                }}
+                                            >
+                                                <Check
+                                                    className={cn(
+                                                        "mr-2 h-4 w-4",
+                                                        (!filters.spg_username || filters.spg_username === 'all') ? "opacity-100" : "opacity-0"
+                                                    )}
+                                                />
+                                                All SPG
+                                            </CommandItem>
+                                            {spgs.map((spg) => (
+                                                <CommandItem
+                                                    key={spg.username}
+                                                    value={spg.name}
+                                                    onSelect={() => {
+                                                        handleSpgFilter(spg.username);
+                                                        setSpgOpen(false);
+                                                    }}
+                                                >
+                                                    <Check
+                                                        className={cn(
+                                                            "mr-2 h-4 w-4",
+                                                            filters.spg_username === spg.username ? "opacity-100" : "opacity-0"
+                                                        )}
+                                                    />
+                                                    {spg.name}
+                                                </CommandItem>
+                                            ))}
+                                        </CommandGroup>
+                                    </CommandList>
+                                </Command>
+                            </PopoverContent>
+                        </Popover>
+                        <Popover open={supervisorOpen} onOpenChange={setSupervisorOpen}>
+                            <PopoverTrigger asChild>
+                                <Button
+                                    variant="outline"
+                                    role="combobox"
+                                    aria-expanded={supervisorOpen}
+                                    className="w-full sm:w-48 justify-between font-normal bg-background"
+                                >
+                                    {filters.supervisor_username
+                                        ? supervisors.find((sv) => sv.username === filters.supervisor_username)?.name
+                                        : "Filter Supervisor"}
+                                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-full sm:w-48 p-0">
+                                <Command>
+                                    <CommandInput placeholder="Search Supervisor..." />
+                                    <CommandList>
+                                        <CommandEmpty>No Supervisor found.</CommandEmpty>
+                                        <CommandGroup>
+                                            <CommandItem
+                                                value="all"
+                                                onSelect={() => {
+                                                    handleSupervisorFilter('all');
+                                                    setSupervisorOpen(false);
+                                                }}
+                                            >
+                                                <Check
+                                                    className={cn(
+                                                        "mr-2 h-4 w-4",
+                                                        (!filters.supervisor_username || filters.supervisor_username === 'all') ? "opacity-100" : "opacity-0"
+                                                    )}
+                                                />
+                                                All Supervisor
+                                            </CommandItem>
+                                            {supervisors.map((sv) => (
+                                                <CommandItem
+                                                    key={sv.username}
+                                                    value={sv.name}
+                                                    onSelect={() => {
+                                                        handleSupervisorFilter(sv.username);
+                                                        setSupervisorOpen(false);
+                                                    }}
+                                                >
+                                                    <Check
+                                                        className={cn(
+                                                            "mr-2 h-4 w-4",
+                                                            filters.supervisor_username === sv.username ? "opacity-100" : "opacity-0"
+                                                        )}
+                                                    />
+                                                    {sv.name}
+                                                </CommandItem>
+                                            ))}
+                                        </CommandGroup>
+                                    </CommandList>
+                                </Command>
+                            </PopoverContent>
+                        </Popover>
                         <Select
                             value={filters.status || 'all'}
                             onValueChange={handleStatusFilter}
                         >
-                            <SelectTrigger className="w-48">
+                            <SelectTrigger className="w-full sm:w-48">
                                 <SelectValue placeholder="Filter Status" />
                             </SelectTrigger>
                             <SelectContent>
@@ -192,7 +293,7 @@ export default function Index({
                                 ))}
                             </SelectContent>
                         </Select>
-                        <div className="flex items-center gap-2 border rounded-md px-2 py-1">
+                        <div className="flex flex-wrap items-center gap-2 border rounded-md px-2 py-1 w-full sm:w-auto">
                             <span className="text-sm text-muted-foreground whitespace-nowrap">From:</span>
                             <Input
                                 type="date"
@@ -200,7 +301,7 @@ export default function Index({
                                 onChange={(e) => setStartDate(e.target.value)}
                                 onClick={(e) => 'showPicker' in e.currentTarget && (e.currentTarget as HTMLInputElement).showPicker()}
                                 onKeyDown={(e) => e.preventDefault()}
-                                className="w-36 h-8 border-none focus-visible:ring-0 shadow-none px-1 cursor-pointer"
+                                className="w-full sm:w-36 h-8 border-none focus-visible:ring-0 shadow-none px-1 cursor-pointer"
                             />
                             <span className="text-sm text-muted-foreground whitespace-nowrap">To:</span>
                             <Input
@@ -210,9 +311,9 @@ export default function Index({
                                 onChange={(e) => setEndDate(e.target.value)}
                                 onClick={(e) => 'showPicker' in e.currentTarget && (e.currentTarget as HTMLInputElement).showPicker()}
                                 onKeyDown={(e) => e.preventDefault()}
-                                className="w-36 h-8 border-none focus-visible:ring-0 shadow-none px-1 cursor-pointer"
+                                className="w-full sm:w-36 h-8 border-none focus-visible:ring-0 shadow-none px-1 cursor-pointer"
                             />
-                            <Button size="sm" variant="secondary" onClick={handleDateFilter} className="h-7 px-2">Apply</Button>
+                            <Button size="sm" variant="secondary" onClick={handleDateFilter} className="h-7 px-2 w-full sm:w-auto">Apply</Button>
                         </div>
                     </div>
                 </div>
