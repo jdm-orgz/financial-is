@@ -55,14 +55,19 @@ interface IndexProps {
         sort_direction?: string;
         start_date?: string;
         end_date?: string;
+        spg_username?: string;
     };
     per_page: number;
+    statusOptions: { label: string; value: string }[];
+    spgs: { id: string; name: string; username: string }[];
 }
 
 export default function Index({
     transactions,
     filters = {},
     per_page,
+    statusOptions,
+    spgs,
 }: IndexProps) {
     const [search, setSearch] = useState(filters.search || '');
     const [startDate, setStartDate] = useState(filters.start_date || '');
@@ -84,7 +89,7 @@ export default function Index({
         }, 300);
 
         return () => clearTimeout(timeoutId);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [search]);
 
     const handleDateFilter = () => {
@@ -98,7 +103,15 @@ export default function Index({
     const handleStatusFilter = (value: string) => {
         router.get(
             window.location.pathname,
-            { ...filters, status: value, search, per_page, start_date: startDate, end_date: endDate },
+            { ...filters, status: value === 'all' ? undefined : value, search, per_page, start_date: startDate, end_date: endDate },
+            { preserveState: true, preserveScroll: true },
+        );
+    };
+
+    const handleSpgFilter = (value: string) => {
+        router.get(
+            window.location.pathname,
+            { ...filters, spg_username: value === 'all' ? undefined : value, search, per_page, start_date: startDate, end_date: endDate },
             { preserveState: true, preserveScroll: true },
         );
     };
@@ -132,7 +145,23 @@ export default function Index({
                             className="w-64"
                         />
                         <Select
-                            value={filters.status || 'approval'}
+                            value={filters.spg_username || 'all'}
+                            onValueChange={handleSpgFilter}
+                        >
+                            <SelectTrigger className="w-48">
+                                <SelectValue placeholder="Filter SPG" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">All SPG</SelectItem>
+                                {spgs.map((spg) => (
+                                    <SelectItem key={spg.username} value={spg.username}>
+                                        {spg.name}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                        <Select
+                            value={filters.status || 'all'}
                             onValueChange={handleStatusFilter}
                         >
                             <SelectTrigger className="w-48">
@@ -140,12 +169,11 @@ export default function Index({
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="all">All Status</SelectItem>
-                                <SelectItem value="draft">Draft</SelectItem>
-                                <SelectItem value="approval">Pending Approval</SelectItem>
-                                <SelectItem value="comparing">Comparing</SelectItem>
-                                <SelectItem value="compared">Compared</SelectItem>
-                                <SelectItem value="correction">Correction</SelectItem>
-                                <SelectItem value="done">Done</SelectItem>
+                                {statusOptions.map((opt) => (
+                                    <SelectItem key={opt.value} value={opt.value}>
+                                        {opt.label}
+                                    </SelectItem>
+                                ))}
                             </SelectContent>
                         </Select>
                         <div className="flex items-center gap-2 border rounded-md px-2 py-1">
@@ -154,17 +182,21 @@ export default function Index({
                                 type="date"
                                 value={startDate}
                                 onChange={(e) => setStartDate(e.target.value)}
-                                onBlur={handleDateFilter}
-                                className="w-36 h-8 border-none focus-visible:ring-0 shadow-none px-1"
+                                onClick={(e) => 'showPicker' in e.currentTarget && (e.currentTarget as HTMLInputElement).showPicker()}
+                                onKeyDown={(e) => e.preventDefault()}
+                                className="w-36 h-8 border-none focus-visible:ring-0 shadow-none px-1 cursor-pointer"
                             />
                             <span className="text-sm text-muted-foreground whitespace-nowrap">To:</span>
                             <Input
                                 type="date"
                                 value={endDate}
+                                min={startDate}
                                 onChange={(e) => setEndDate(e.target.value)}
-                                onBlur={handleDateFilter}
-                                className="w-36 h-8 border-none focus-visible:ring-0 shadow-none px-1"
+                                onClick={(e) => 'showPicker' in e.currentTarget && (e.currentTarget as HTMLInputElement).showPicker()}
+                                onKeyDown={(e) => e.preventDefault()}
+                                className="w-36 h-8 border-none focus-visible:ring-0 shadow-none px-1 cursor-pointer"
                             />
+                            <Button size="sm" variant="secondary" onClick={handleDateFilter} className="h-7 px-2">Apply</Button>
                         </div>
                     </div>
                 </div>
@@ -205,8 +237,8 @@ export default function Index({
                                             {tx.outlet.name}
                                         </TableCell>
                                         <TableCell>{tx.created_by.name}</TableCell>
-                                        <TableCell>{tx.date.includes('T') ? tx.date.substring(0, 10) : tx.date}</TableCell>
-                                        <TableCell>{tx.date.includes('T') ? tx.date.substring(11, 19) : '-'}</TableCell>
+                                        <TableCell>{tx.date}</TableCell>
+                                        <TableCell>{tx.created_at ? new Date(tx.created_at).toTimeString().substring(0, 8) : '-'}</TableCell>
                                         <TableCell>
                                             <Badge variant={statusVariantMap[tx.status] || 'secondary'}>
                                                 {statusLabelMap[tx.status] || tx.status}

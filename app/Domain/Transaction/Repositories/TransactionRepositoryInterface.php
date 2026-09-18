@@ -16,12 +16,12 @@ interface TransactionRepositoryInterface
     /**
      * Get paginated transactions for a supervisor.
      */
-    public function getPaginatedForSupervisor(string $supervisorId, int $perPage = 10, ?string $search = null, ?string $status = null, ?string $sortBy = null, string $sortDirection = 'asc', ?string $startDate = null, ?string $endDate = null): LengthAwarePaginator;
+    public function getPaginatedForSupervisor(string $supervisorId, int $perPage = 10, ?string $search = null, ?string $status = null, ?string $sortBy = null, string $sortDirection = 'asc', ?string $startDate = null, ?string $endDate = null, ?string $spgId = null): LengthAwarePaginator;
 
     /**
      * Get paginated transactions for admin.
      */
-    public function getPaginatedForAdmin(int $perPage = 10, ?string $search = null, ?string $status = null): LengthAwarePaginator;
+    public function getPaginatedForAdmin(int $perPage = 10, ?string $search = null, ?string $status = null, ?string $startDate = null, ?string $endDate = null, ?string $spgId = null, ?string $supervisorId = null): LengthAwarePaginator;
 
     /**
      * Find a transaction by ID with all relations.

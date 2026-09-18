@@ -52,7 +52,7 @@ interface IndexProps {
     };
     filters: {
         search?: string;
-        status: string;
+        status?: string;
         sort_by?: string;
         sort_direction?: string;
         start_date?: string;
@@ -166,17 +166,21 @@ export default function Index({
                                 type="date"
                                 value={startDate}
                                 onChange={(e) => setStartDate(e.target.value)}
-                                onBlur={handleDateFilter}
-                                className="w-36 h-8 border-none focus-visible:ring-0 shadow-none px-1"
+                                onClick={(e) => 'showPicker' in e.currentTarget && (e.currentTarget as HTMLInputElement).showPicker()}
+                                onKeyDown={(e) => e.preventDefault()}
+                                className="w-36 h-8 border-none focus-visible:ring-0 shadow-none px-1 cursor-pointer"
                             />
                             <span className="text-sm text-muted-foreground whitespace-nowrap">To:</span>
                             <Input
                                 type="date"
                                 value={endDate}
+                                min={startDate}
                                 onChange={(e) => setEndDate(e.target.value)}
-                                onBlur={handleDateFilter}
-                                className="w-36 h-8 border-none focus-visible:ring-0 shadow-none px-1"
+                                onClick={(e) => 'showPicker' in e.currentTarget && (e.currentTarget as HTMLInputElement).showPicker()}
+                                onKeyDown={(e) => e.preventDefault()}
+                                className="w-36 h-8 border-none focus-visible:ring-0 shadow-none px-1 cursor-pointer"
                             />
+                            <Button size="sm" variant="secondary" onClick={handleDateFilter} className="h-7 px-2">Apply</Button>
                         </div>
                         <Button asChild>
                             <Link href="/transactions/create">
@@ -218,8 +222,8 @@ export default function Index({
                                         <TableCell className="font-medium">
                                             {tx.outlet.name}
                                         </TableCell>
-                                        <TableCell>{tx.date.includes('T') ? tx.date.substring(0, 10) : tx.date}</TableCell>
-                                        <TableCell>{tx.date.includes('T') ? tx.date.substring(11, 19) : '-'}</TableCell>
+                                        <TableCell>{tx.date}</TableCell>
+                                        <TableCell>{tx.created_at ? new Date(tx.created_at).toTimeString().substring(0, 8) : '-'}</TableCell>
                                         <TableCell>
                                             <Badge variant={statusVariantMap[tx.status] || 'secondary'}>
                                                 {statusLabelMap[tx.status] || tx.status}

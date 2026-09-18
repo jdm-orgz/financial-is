@@ -34,9 +34,15 @@ interface IndexProps {
     filters: {
         search?: string;
         status?: string;
+        start_date?: string;
+        end_date?: string;
+        spg_username?: string;
+        supervisor_username?: string;
     };
     per_page: number;
     statusOptions: { label: string; value: string }[];
+    spgs: { id: string; name: string; username: string }[];
+    supervisors: { id: string; name: string; username: string }[];
 }
 
 export default function Index({
@@ -44,9 +50,13 @@ export default function Index({
     filters = {},
     per_page,
     statusOptions,
+    spgs,
+    supervisors,
 }: IndexProps) {
     const [search, setSearch] = useState(filters.search || '');
     const [debouncedSearch, setDebouncedSearch] = useState(search);
+    const [startDate, setStartDate] = useState(filters.start_date || '');
+    const [endDate, setEndDate] = useState(filters.end_date || '');
 
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -56,19 +66,44 @@ export default function Index({
     }, [search]);
 
     useEffect(() => {
-        if (debouncedSearch !== filters.search) {
+        if (debouncedSearch !== (filters.search || '')) {
             router.get(
                 window.location.pathname,
-                { ...filters, search: debouncedSearch, per_page },
+                { ...filters, search: debouncedSearch, per_page, start_date: startDate, end_date: endDate },
                 { preserveState: true, preserveScroll: true },
             );
         }
-    }, [debouncedSearch, filters, per_page]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [debouncedSearch, per_page]);
+
+    const handleDateFilter = () => {
+        router.get(
+            window.location.pathname,
+            { ...filters, search: debouncedSearch, per_page, start_date: startDate, end_date: endDate },
+            { preserveState: true, preserveScroll: true },
+        );
+    };
 
     const handleStatusFilter = (value: string) => {
         router.get(
             window.location.pathname,
-            { ...filters, status: value, per_page },
+            { ...filters, status: value === 'all' ? undefined : value, per_page, search: debouncedSearch, start_date: startDate, end_date: endDate },
+            { preserveState: true, preserveScroll: true },
+        );
+    };
+
+    const handleSpgFilter = (value: string) => {
+        router.get(
+            window.location.pathname,
+            { ...filters, spg_username: value === 'all' ? undefined : value, per_page, search: debouncedSearch, start_date: startDate, end_date: endDate },
+            { preserveState: true, preserveScroll: true },
+        );
+    };
+
+    const handleSupervisorFilter = (value: string) => {
+        router.get(
+            window.location.pathname,
+            { ...filters, supervisor_username: value === 'all' ? undefined : value, per_page, search: debouncedSearch, start_date: startDate, end_date: endDate },
             { preserveState: true, preserveScroll: true },
         );
     };
@@ -110,10 +145,42 @@ export default function Index({
                             onChange={(e) => setSearch(e.target.value)}
                         />
                         <Select
+                            value={filters.spg_username || 'all'}
+                            onValueChange={handleSpgFilter}
+                        >
+                            <SelectTrigger className="w-48">
+                                <SelectValue placeholder="Filter SPG" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">All SPG</SelectItem>
+                                {spgs.map((spg) => (
+                                    <SelectItem key={spg.username} value={spg.username}>
+                                        {spg.name}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                        <Select
+                            value={filters.supervisor_username || 'all'}
+                            onValueChange={handleSupervisorFilter}
+                        >
+                            <SelectTrigger className="w-48">
+                                <SelectValue placeholder="Filter Supervisor" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">All Supervisor</SelectItem>
+                                {supervisors.map((supervisor) => (
+                                    <SelectItem key={supervisor.username} value={supervisor.username}>
+                                        {supervisor.name}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                        <Select
                             value={filters.status || 'all'}
                             onValueChange={handleStatusFilter}
                         >
-                            <SelectTrigger className="w-64">
+                            <SelectTrigger className="w-48">
                                 <SelectValue placeholder="Filter Status" />
                             </SelectTrigger>
                             <SelectContent>
@@ -125,6 +192,28 @@ export default function Index({
                                 ))}
                             </SelectContent>
                         </Select>
+                        <div className="flex items-center gap-2 border rounded-md px-2 py-1">
+                            <span className="text-sm text-muted-foreground whitespace-nowrap">From:</span>
+                            <Input
+                                type="date"
+                                value={startDate}
+                                onChange={(e) => setStartDate(e.target.value)}
+                                onClick={(e) => 'showPicker' in e.currentTarget && (e.currentTarget as HTMLInputElement).showPicker()}
+                                onKeyDown={(e) => e.preventDefault()}
+                                className="w-36 h-8 border-none focus-visible:ring-0 shadow-none px-1 cursor-pointer"
+                            />
+                            <span className="text-sm text-muted-foreground whitespace-nowrap">To:</span>
+                            <Input
+                                type="date"
+                                value={endDate}
+                                min={startDate}
+                                onChange={(e) => setEndDate(e.target.value)}
+                                onClick={(e) => 'showPicker' in e.currentTarget && (e.currentTarget as HTMLInputElement).showPicker()}
+                                onKeyDown={(e) => e.preventDefault()}
+                                className="w-36 h-8 border-none focus-visible:ring-0 shadow-none px-1 cursor-pointer"
+                            />
+                            <Button size="sm" variant="secondary" onClick={handleDateFilter} className="h-7 px-2">Apply</Button>
+                        </div>
                     </div>
                 </div>
 
@@ -135,6 +224,8 @@ export default function Index({
                                 <TableHead>Outlet</TableHead>
                                 <TableHead>SPG</TableHead>
                                 <TableHead>Date</TableHead>
+                                <TableHead>Time</TableHead>
+                                <TableHead>Supervisor</TableHead>
                                 <TableHead>Status</TableHead>
                                 <TableHead className="text-right">Action</TableHead>
                             </TableRow>
@@ -142,7 +233,7 @@ export default function Index({
                         <TableBody>
                             {transactions.data.length === 0 ? (
                                 <TableRow>
-                                    <TableCell colSpan={5} className="h-24 text-center">
+                                    <TableCell colSpan={7} className="h-24 text-center">
                                         No transaction data found.
                                     </TableCell>
                                 </TableRow>
@@ -154,6 +245,8 @@ export default function Index({
                                         </TableCell>
                                         <TableCell>{tx.created_by.name}</TableCell>
                                         <TableCell>{tx.date}</TableCell>
+                                        <TableCell>{tx.created_at ? new Date(tx.created_at).toTimeString().substring(0, 8) : '-'}</TableCell>
+                                        <TableCell>{tx.supervisor_actioned_by?.name || '-'}</TableCell>
                                         <TableCell>
                                             <Badge variant={getStatusBadgeVariant(tx.status)}>
                                                 {getStatusLabel(tx.status)}
@@ -192,7 +285,7 @@ export default function Index({
                                 onValueChange={(value) => {
                                     router.get(
                                         window.location.pathname,
-                                        { ...filters, per_page: value },
+                                        { ...filters, per_page: value, search: debouncedSearch, start_date: startDate, end_date: endDate },
                                         { preserveState: true, preserveScroll: true },
                                     );
                                 }}

@@ -37,7 +37,7 @@ class Transaction extends Model
     {
         return [
             'status' => TransactionStatus::class,
-            'date' => 'date',
+            'date' => 'date:Y-m-d',
             'supervisor_actioned_at' => 'datetime',
             'admin_actioned_at' => 'datetime',
         ];

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Transaction;
 use App\Domain\Transaction\Actions\CalculateVarianceAction;
 use App\Domain\Transaction\Repositories\TransactionRepositoryInterface;
 use App\Domain\Transaction\Repositories\TransactionSystemIncomeRepositoryInterface;
+use App\Domain\UserAccess\Models\User;
 use App\Enums\TransactionStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Transaction\StoreTransactionSystemIncomeRequest;
@@ -30,15 +31,45 @@ class AdminTransactionController extends Controller
     {
         $search = request('search');
         $status = request('status');
+        $startDate = request('start_date');
+        $endDate = request('end_date');
+        $spgUsername = request('spg_username');
+        $supervisorUsername = request('supervisor_username');
         $perPage = (int) request('per_page', 10);
 
-        $transactions = $this->transactionRepository->getPaginatedForAdmin($perPage, $search, $status);
+        $decryptedSpgId = null;
+        if ($spgUsername && $spgUsername !== 'all') {
+            $spgUser = User::where('username', $spgUsername)->first();
+            if ($spgUser) {
+                $decryptedSpgId = $spgUser->id;
+            }
+        }
+
+        $decryptedSupervisorId = null;
+        if ($supervisorUsername && $supervisorUsername !== 'all') {
+            $supervisorUser = User::where('username', $supervisorUsername)->first();
+            if ($supervisorUser) {
+                $decryptedSupervisorId = $supervisorUser->id;
+            }
+        }
+
+        $transactions = $this->transactionRepository->getPaginatedForAdmin($perPage, $search, $status, $startDate, $endDate, $decryptedSpgId, $decryptedSupervisorId);
+
+        $spgs = User::whereHas('role', function ($q) {
+            $q->where('name', 'spg');
+        })->get(['id', 'name', 'username']);
+
+        $supervisors = User::whereHas('role', function ($q) {
+            $q->where('name', 'supervisor');
+        })->get(['id', 'name', 'username']);
 
         return Inertia::render('Admin/Transactions/Index', [
             'transactions' => $transactions,
-            'filters' => request()->only(['search', 'status']),
+            'filters' => request()->only(['search', 'status', 'start_date', 'end_date', 'spg_username', 'supervisor_username']),
             'per_page' => $perPage,
             'statusOptions' => TransactionStatus::options(),
+            'spgs' => $spgs,
+            'supervisors' => $supervisors,
         ]);
     }
 

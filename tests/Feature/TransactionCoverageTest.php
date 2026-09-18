@@ -16,7 +16,13 @@ use App\Domain\Transaction\Repositories\EloquentTransactionSystemIncomeRepositor
 use App\Domain\Transaction\Repositories\EloquentTransactionTransferProofRepository;
 use App\Domain\UserAccess\Models\User;
 use App\Enums\TransactionStatus;
+use App\Http\Middleware\VerifyTransactionAccess;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Request;
+use Illuminate\Http\Response;
+use Illuminate\Routing\Route;
+use Illuminate\Support\Facades\Crypt;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 use Tests\TestCase;
 
 class TransactionCoverageTest extends TestCase
@@ -116,12 +122,12 @@ class TransactionCoverageTest extends TestCase
 
     public function test_verify_transaction_access_middleware()
     {
-        $middleware = new \App\Http\Middleware\VerifyTransactionAccess(new EloquentTransactionRepository);
-        $request = \Illuminate\Http\Request::create('/test', 'GET');
-        
+        $middleware = new VerifyTransactionAccess(new EloquentTransactionRepository);
+        $request = Request::create('/test', 'GET');
+
         // No transactionId
         $response = $middleware->handle($request, function ($req) {
-            return new \Illuminate\Http\Response('ok');
+            return new Response('ok');
         }, 'spg');
         $this->assertEquals('ok', $response->getContent());
 
@@ -129,29 +135,31 @@ class TransactionCoverageTest extends TestCase
         $user = User::factory()->create();
         $outlet = Outlet::factory()->create();
         $transaction = Transaction::factory()->create(['created_by' => $user->id, 'outlet_id' => $outlet->id, 'status' => TransactionStatus::Draft]);
-        
-        $request = \Illuminate\Http\Request::create('/test/'.\Illuminate\Support\Facades\Crypt::encryptString($transaction->id), 'GET');
-        $route = new \Illuminate\Routing\Route('GET', '/test/{transaction}', []);
+
+        $request = Request::create('/test/'.Crypt::encryptString($transaction->id), 'GET');
+        $route = new Route('GET', '/test/{transaction}', []);
         $route->bind($request);
         $request->setRouteResolver(function () use ($route) {
             return $route;
         });
-        
+
         $this->actingAs($user);
-        
+
         try {
-            $middleware->handle($request, function ($req) { return new \Illuminate\Http\Response('ok'); }, 'invalid');
+            $middleware->handle($request, function ($req) {
+                return new Response('ok');
+            }, 'invalid');
             $this->fail('Expected abort 500');
-        } catch (\Symfony\Component\HttpKernel\Exception\HttpException $e) {
+        } catch (HttpException $e) {
             $this->assertEquals(500, $e->getStatusCode());
         }
 
         // expectsJson error response
         $request->headers->set('Accept', 'application/json');
         $response = $middleware->handle($request, function ($req) {
-            return new \Illuminate\Http\Response('ok');
+            return new Response('ok');
         }, 'spg', TransactionStatus::Approval->value);
-        
+
         $this->assertEquals(403, $response->getStatusCode());
         $this->assertEquals('Transaction status is invalid for this action.', json_decode($response->getContent(), true)['message']);
     }

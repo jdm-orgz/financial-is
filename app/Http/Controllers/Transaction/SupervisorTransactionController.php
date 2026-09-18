@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Transaction;
 
 use App\Domain\Transaction\Repositories\TransactionRepositoryInterface;
+use App\Domain\UserAccess\Models\User;
 use App\Enums\TransactionStatus;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
@@ -27,26 +28,48 @@ class SupervisorTransactionController extends Controller
         $sortDirection = request('sort_direction', 'asc');
         $startDate = request('start_date', now()->format('Y-m-d'));
         $endDate = request('end_date', now()->format('Y-m-d'));
+        $spgUsername = request('spg_username');
+        $decryptedSpgId = null;
+
+        if ($spgUsername && $spgUsername !== 'all') {
+            $spgUser = User::where('username', $spgUsername)->first();
+            if ($spgUser) {
+                $decryptedSpgId = $spgUser->id;
+            }
+        }
+
         $perPage = (int) request('per_page', 10);
+        $supervisorId = auth()->id();
 
         $transactions = $this->transactionRepository->getPaginatedForSupervisor(
-            auth()->id(),
+            $supervisorId,
             $perPage,
             $search,
             $status,
             $sortBy,
             $sortDirection,
             $startDate,
-            $endDate
+            $endDate,
+            $decryptedSpgId
         );
+
+        $spgs = User::whereHas('role', function ($q) {
+            $q->where('name', 'spg');
+        })->whereHas('outlets', function ($q) use ($supervisorId) {
+            $q->whereHas('users', function ($q2) use ($supervisorId) {
+                $q2->where('users.id', $supervisorId);
+            });
+        })->get(['id', 'name', 'username']);
 
         return Inertia::render('Supervisor/Transactions/Index', [
             'transactions' => $transactions,
-            'filters' => array_merge(request()->only(['status', 'search', 'sort_by', 'sort_direction']), [
+            'filters' => array_merge(request()->only(['status', 'search', 'sort_by', 'sort_direction', 'spg_username']), [
                 'start_date' => $startDate,
                 'end_date' => $endDate,
             ]),
             'per_page' => $perPage,
+            'statusOptions' => TransactionStatus::options(),
+            'spgs' => $spgs,
         ]);
     }
 
