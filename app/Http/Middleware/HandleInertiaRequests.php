@@ -55,6 +55,7 @@ class HandleInertiaRequests extends Middleware
                     'supervisor' => $request->user() ? $request->user()->hasPermissionTo('transaction/approval/spv/*', '*') : false,
                     'admin' => $request->user() ? $request->user()->hasPermissionTo('transaction/approval/admin/*', '*') : false,
                     'app_config' => $request->user() ? $request->user()->hasPermissionTo('app-config/*', '*') : false,
+                    'gallery' => $request->user() ? $request->user()->hasPermissionTo('gallery/*', '*') : false,
                 ],
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',

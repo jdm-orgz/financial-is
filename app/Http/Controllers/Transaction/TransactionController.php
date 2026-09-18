@@ -34,10 +34,9 @@ class TransactionController extends Controller
         $perPage = (int) request('per_page', 10);
 
         $user = auth()->user();
-        $isSuperAdmin = $user->role->name === 'super_admin';
 
         $transactions = $this->transactionRepository->getPaginatedForSpg(
-            $isSuperAdmin ? null : $user->id,
+            $user->id,
             $perPage,
             $search,
             $status,

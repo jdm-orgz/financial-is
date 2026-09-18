@@ -474,15 +474,15 @@ class DashboardTest extends TestCase
         $user->outlets()->attach($linkedOutlet->id, ['is_active' => '1', 'created_by' => $user->id]);
 
         // Linked outlet transactions
-        Transaction::factory()->approval()->create(['outlet_id' => $linkedOutlet->id]);
-        Transaction::factory()->comparing()->create(['outlet_id' => $linkedOutlet->id]);
-        Transaction::factory()->compared()->create(['outlet_id' => $linkedOutlet->id]);
-        Transaction::factory()->create(['outlet_id' => $linkedOutlet->id, 'status' => TransactionStatus::Draft]);
-        Transaction::factory()->correction()->create(['outlet_id' => $linkedOutlet->id]);
-        Transaction::factory()->done()->create(['outlet_id' => $linkedOutlet->id]);
+        Transaction::factory()->approval()->create(['outlet_id' => $linkedOutlet->id, 'created_by' => $user->id]);
+        Transaction::factory()->comparing()->create(['outlet_id' => $linkedOutlet->id, 'created_by' => $user->id]);
+        Transaction::factory()->compared()->create(['outlet_id' => $linkedOutlet->id, 'created_by' => $user->id]);
+        Transaction::factory()->create(['outlet_id' => $linkedOutlet->id, 'status' => TransactionStatus::Draft, 'created_by' => $user->id]);
+        Transaction::factory()->correction()->create(['outlet_id' => $linkedOutlet->id, 'created_by' => $user->id]);
+        Transaction::factory()->done()->create(['outlet_id' => $linkedOutlet->id, 'created_by' => $user->id]);
 
         // Other outlet transaction - should NOT be counted
-        Transaction::factory()->done()->create(['outlet_id' => $otherOutlet->id]);
+        Transaction::factory()->done()->create(['outlet_id' => $otherOutlet->id, 'created_by' => $user->id]);
 
         $response = $this->actingAs($user)->get(route('dashboard'));
 

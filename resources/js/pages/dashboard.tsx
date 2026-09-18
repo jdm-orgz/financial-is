@@ -187,7 +187,7 @@ export default function Dashboard({
                                     </div>
                                 </div>
                             </div>
-                            <div className="relative flex flex-col gap-4 overflow-hidden rounded-xl border border-sidebar-border/70 p-6 dark:border-sidebar-border">
+                            <div className="relative flex flex-col gap-4 rounded-xl border border-sidebar-border/70 p-6 dark:border-sidebar-border">
                                 <h2 className="text-lg font-semibold tracking-tight">
                                     Storage Data
                                 </h2>
@@ -209,7 +209,7 @@ export default function Dashboard({
                                                     className="absolute bottom-full mb-2 -translate-x-1/2 z-50 pointer-events-none drop-shadow-xl"
                                                     style={{ left: tooltipPos.x }}
                                                 >
-                                                    <div className="bg-[#444444]/95 dark:bg-[#333333]/95 backdrop-blur-md text-white rounded-[1.25rem] py-2 px-4 border border-white/10 text-center flex flex-col items-center">
+                                                    <div className="bg-[#444444]/95 dark:bg-[#333333]/95 backdrop-blur-md text-white rounded-[1.25rem] py-2 px-4 border border-white/10 text-center flex flex-col items-center whitespace-nowrap min-w-max">
                                                         <span className="font-semibold text-[15px]">{hoveredType === 'system' ? 'System Data' : 'Media Data'}</span>
                                                         <span className="text-[13px] font-medium text-neutral-300">{formatBytes(hoveredType === 'system' ? storage.system : storage.media)}</span>
                                                     </div>
@@ -217,31 +217,39 @@ export default function Dashboard({
                                                 </div>
                                             )}
                                             <div className="flex h-6 w-full overflow-hidden rounded-md bg-neutral-200 dark:bg-neutral-800">
-                                                <div 
-                                                    className="bg-red-500 hover:brightness-110 transition-all cursor-default" 
-                                                    style={{ width: `${(storage.system / storage.total) * 100}%` }}
-                                                    onMouseEnter={() => setHoveredType('system')}
-                                                    onMouseLeave={() => setHoveredType(null)}
-                                                />
-                                                <div 
-                                                    className="bg-orange-400 border-l border-neutral-900/10 hover:brightness-110 transition-all cursor-default" 
-                                                    style={{ width: `${(storage.media / storage.total) * 100}%` }}
-                                                    onMouseEnter={() => setHoveredType('media')}
-                                                    onMouseLeave={() => setHoveredType(null)}
-                                                />
+                                                {storage.system > 0 && (
+                                                    <div 
+                                                        className="bg-red-500 hover:brightness-110 transition-all cursor-default" 
+                                                        style={{ width: `${(storage.system / storage.total) * 100}%` }}
+                                                        onMouseEnter={() => setHoveredType('system')}
+                                                        onMouseLeave={() => setHoveredType(null)}
+                                                    />
+                                                )}
+                                                {storage.media > 0 && (
+                                                    <div 
+                                                        className="bg-orange-400 border-l border-neutral-900/10 hover:brightness-110 transition-all cursor-default" 
+                                                        style={{ width: `${(storage.media / storage.total) * 100}%` }}
+                                                        onMouseEnter={() => setHoveredType('media')}
+                                                        onMouseLeave={() => setHoveredType(null)}
+                                                    />
+                                                )}
                                             </div>
                                         </div>
                                         
                                         <div className="flex justify-between items-center mt-2 text-xs">
                                             <div className="flex items-center gap-4">
-                                                <div className="flex items-center gap-1.5">
-                                                    <div className="w-3 h-3 rounded-sm bg-red-500"></div>
-                                                    <span className="font-medium text-neutral-600 dark:text-neutral-300">System</span>
-                                                </div>
-                                                <div className="flex items-center gap-1.5">
-                                                    <div className="w-3 h-3 rounded-sm bg-orange-400"></div>
-                                                    <span className="font-medium text-neutral-600 dark:text-neutral-300">Media</span>
-                                                </div>
+                                                {storage.system > 0 &&
+                                                    <div className="flex items-center gap-1.5">
+                                                        <div className="w-3 h-3 rounded-sm bg-red-500"></div>
+                                                        <span className="font-medium text-neutral-600 dark:text-neutral-300">System</span>
+                                                    </div>
+                                                }
+                                                {storage.media > 0 &&
+                                                    <div className="flex items-center gap-1.5">
+                                                        <div className="w-3 h-3 rounded-sm bg-orange-400"></div>
+                                                        <span className="font-medium text-neutral-600 dark:text-neutral-300">Media</span>
+                                                    </div>
+                                                }
                                             </div>
                                             <span className="font-medium text-neutral-700 dark:text-neutral-200">
                                                 {formatBytes(storage.left)} left

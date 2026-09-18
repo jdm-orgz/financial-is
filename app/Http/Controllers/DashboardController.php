@@ -200,7 +200,8 @@ class DashboardController extends Controller
             $data['transactionDone'] = (clone $query)->where('status', TransactionStatus::Done->value)->count();
         } elseif ($userRole === 'spg') {
             $outletIds = $request->user()->outlets()->pluck('outlets.id')->toArray();
-            $query = Transaction::whereIn('outlet_id', $outletIds);
+            $query = Transaction::whereIn('outlet_id', $outletIds)
+                ->where('created_by', $request->user()->id);
 
             $data['totalTransaction'] = (clone $query)->count();
             $data['transactionIncomplete'] = (clone $query)->whereIn('status', [
