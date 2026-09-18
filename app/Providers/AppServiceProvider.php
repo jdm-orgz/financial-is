@@ -22,6 +22,13 @@ use App\Domain\UserAccess\Repositories\EloquentRoleRepository;
 use App\Domain\UserAccess\Repositories\EloquentUserRepository;
 use App\Domain\UserAccess\Repositories\RoleRepositoryInterface;
 use App\Domain\UserAccess\Repositories\UserRepositoryInterface;
+use App\Domain\Outlet\Models\Chair;
+use App\Domain\Outlet\Models\LinkedOutletUser;
+use App\Domain\Outlet\Models\Outlet;
+use App\Domain\Transaction\Models\Transaction;
+use App\Domain\UserAccess\Models\Role;
+use App\Domain\UserAccess\Models\User;
+use App\Events\DataUpdated;
 use App\Listeners\AuthEventSubscriber;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Date;
@@ -104,6 +111,12 @@ class AppServiceProvider extends ServiceProvider
 
         Event::subscribe(AuthEventSubscriber::class);
         $this->configureDefaults();
+
+        $models = [User::class, Role::class, Outlet::class, Chair::class, Transaction::class, LinkedOutletUser::class];
+        foreach ($models as $model) {
+            $model::saved(fn () => broadcast(new DataUpdated()));
+            $model::deleted(fn () => broadcast(new DataUpdated()));
+        }
     }
 
     /**
