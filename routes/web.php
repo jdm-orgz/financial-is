@@ -21,14 +21,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', fn () => redirect()->route('login'))->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('dashboard', function () {
-        return inertia('dashboard', [
-            'totalUsers' => User::count(),
-            'totalRoles' => Role::count(),
-            'totalOutlets' => Outlet::count(),
-            'totalChairs' => Chair::count(),
-        ]);
-    })->name('dashboard');
+    Route::get('dashboard', \App\Http\Controllers\DashboardController::class)->name('dashboard');
 
     Route::middleware(['permission:master/*,*'])->group(function () {
         Route::resource('roles', RoleController::class)->except(['show']);
