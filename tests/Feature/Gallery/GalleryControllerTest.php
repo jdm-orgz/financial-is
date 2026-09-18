@@ -128,6 +128,38 @@ class GalleryControllerTest extends TestCase
         );
     }
 
+
+    public function test_gallery_index_sorts_files_correctly(): void
+    {
+        Storage::fake('public');
+        Storage::disk('public')->put('proofs/images/1.jpg', '1');
+        Storage::disk('public')->put('proofs/images/2.jpg', '22');
+        
+        $disk = Storage::disk('public');
+        touch($disk->path('proofs/images/1.jpg'), time() - 3600);
+        touch($disk->path('proofs/images/2.jpg'), time());
+
+        $this->actingAs($this->user)->get(route('gallery.index', ['sort' => 'date_asc']))->assertOk();
+        $this->actingAs($this->user)->get(route('gallery.index', ['sort' => 'size_desc']))->assertOk();
+        $this->actingAs($this->user)->get(route('gallery.index', ['sort' => 'size_asc']))->assertOk();
+        $this->actingAs($this->user)->get(route('gallery.index', ['sort' => 'date_desc']))->assertOk();
+    }
+
+    public function test_gallery_index_skips_missing_files(): void
+    {
+        $mockDisk = \Mockery::mock(\Illuminate\Contracts\Filesystem\Filesystem::class);
+        $mockDisk->shouldReceive('exists')->with('proofs/images')->andReturn(true);
+        $mockDisk->shouldReceive('exists')->with('proofs/transfers')->andReturn(false);
+        $mockDisk->shouldReceive('exists')->with('proofs/videos')->andReturn(false);
+        
+        $mockDisk->shouldReceive('files')->with('proofs/images')->andReturn(['proofs/images/fake.jpg']);
+        $mockDisk->shouldReceive('path')->with('proofs/images/fake.jpg')->andReturn('/invalid/path/fake.jpg');
+        
+        Storage::shouldReceive('disk')->with('public')->andReturn($mockDisk);
+        
+        $response = $this->actingAs($this->user)->get(route('gallery.index'));
+        $response->assertOk();
+    }
     public function test_gallery_index_requires_authentication(): void
     {
         $response = $this->get(route('gallery.index'));
@@ -151,6 +183,56 @@ class GalleryControllerTest extends TestCase
         $this->assertStringContainsString('application/zip', $response->headers->get('Content-Type') ?? '');
     }
 
+
+    public function test_gallery_download_creates_tmp_dir_if_missing(): void
+    {
+        Storage::fake('public');
+        Storage::disk('public')->put('proofs/images/photo.jpg', 'image-content');
+        
+        if (is_dir(storage_path('app/private/tmp'))) {
+            \Illuminate\Support\Facades\File::deleteDirectory(storage_path('app/private/tmp'));
+        }
+
+        $response = $this->actingAs($this->user)->post(route('gallery.download'), [
+            'paths' => ['proofs/images/photo.jpg'],
+        ]);
+
+        $response->assertOk();
+        $this->assertTrue(is_dir(storage_path('app/private/tmp')));
+    }
+
+    public function test_gallery_download_aborts_if_zip_cannot_be_created(): void
+    {
+        Storage::fake('public');
+        Storage::disk('public')->put('proofs/images/photo.jpg', 'image-content');
+        
+        $now = now();
+        \Carbon\Carbon::setTestNow($now);
+        $zipName = 'gallery_'.$now->format('Ymd_His').'.zip';
+        $zipPath = storage_path('app/private/tmp/'.$zipName);
+        
+        if (! is_dir(storage_path('app/private/tmp'))) {
+            mkdir(storage_path('app/private/tmp'), 0755, true);
+        }
+        
+        if (file_exists($zipPath)) {
+            @unlink($zipPath);
+        }
+        if (is_dir($zipPath)) {
+            @rmdir($zipPath);
+        }
+        
+        mkdir($zipPath);
+
+        $response = $this->actingAs($this->user)->post(route('gallery.download'), [
+            'paths' => ['proofs/images/photo.jpg'],
+        ]);
+
+        $response->assertStatus(500);
+        
+        @rmdir($zipPath);
+        \Carbon\Carbon::setTestNow();
+    }
     public function test_gallery_download_validates_required_paths(): void
     {
         $response = $this->actingAs($this->user)->post(route('gallery.download'), [
