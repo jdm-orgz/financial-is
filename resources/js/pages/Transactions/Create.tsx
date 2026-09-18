@@ -30,9 +30,10 @@ interface CreateProps {
 
 export default function Create({ outlets }: CreateProps) {
     const [openOutletDropdown, setOpenOutletDropdown] = useState(false);
+    const [defaultDate] = useState(() => new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0]);
     const { data, setData, post, processing, errors } = useForm({
         outlet_id: '',
-        date: new Date().toISOString().split('T')[0],
+        date: defaultDate,
     });
 
     const submit = (e: React.FormEvent) => {

@@ -40,8 +40,14 @@ interface IndexProps {
 }
 
 function formatFileSize(bytes: number): string {
-    if (bytes < 1024) return `${bytes} B`;
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    if (bytes < 1024) {
+return `${bytes} B`;
+}
+
+    if (bytes < 1024 * 1024) {
+return `${(bytes / 1024).toFixed(1)} KB`;
+}
+
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
@@ -60,11 +66,13 @@ export default function Index({ groups, filters, total }: IndexProps) {
     const toggleSelect = (path: string) => {
         setSelected((prev) => {
             const next = new Set(prev);
+
             if (next.has(path)) {
                 next.delete(path);
             } else {
                 next.add(path);
             }
+
             return next;
         });
     };
@@ -97,9 +105,13 @@ export default function Index({ groups, filters, total }: IndexProps) {
 
     const navigateViewer = useCallback(
         (direction: 'prev' | 'next') => {
-            if (!viewerFile || !viewerGroup) return;
+            if (!viewerFile || !viewerGroup) {
+return;
+}
+
             const idx = viewerGroup.files.findIndex((f) => f.path === viewerFile.path);
             const newIdx = direction === 'prev' ? idx - 1 : idx + 1;
+
             if (newIdx >= 0 && newIdx < viewerGroup.files.length) {
                 setViewerFile(viewerGroup.files[newIdx]);
             }
@@ -110,12 +122,24 @@ export default function Index({ groups, filters, total }: IndexProps) {
     // Keyboard navigation in viewer
     useEffect(() => {
         const handler = (e: KeyboardEvent) => {
-            if (!viewerFile) return;
-            if (e.key === 'ArrowLeft') navigateViewer('prev');
-            if (e.key === 'ArrowRight') navigateViewer('next');
-            if (e.key === 'Escape') closeViewer();
+            if (!viewerFile) {
+return;
+}
+
+            if (e.key === 'ArrowLeft') {
+navigateViewer('prev');
+}
+
+            if (e.key === 'ArrowRight') {
+navigateViewer('next');
+}
+
+            if (e.key === 'Escape') {
+closeViewer();
+}
         };
         window.addEventListener('keydown', handler);
+
         return () => window.removeEventListener('keydown', handler);
     }, [viewerFile, navigateViewer]);
 
@@ -127,8 +151,12 @@ export default function Index({ groups, filters, total }: IndexProps) {
     }, [viewerFile]);
 
     const handleDownload = async () => {
-        if (selected.size === 0) return;
+        if (selected.size === 0) {
+return;
+}
+
         setIsDownloading(true);
+
         try {
             const csrfToken = (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement)?.content ?? '';
             const response = await fetch('/gallery/download', {
@@ -140,7 +168,9 @@ export default function Index({ groups, filters, total }: IndexProps) {
                 body: JSON.stringify({ paths: Array.from(selected) }),
             });
 
-            if (!response.ok) throw new Error('Download failed');
+            if (!response.ok) {
+throw new Error('Download failed');
+}
 
             const blob = await response.blob();
             const url = URL.createObjectURL(blob);
@@ -159,7 +189,10 @@ export default function Index({ groups, filters, total }: IndexProps) {
     };
 
     const handleDelete = () => {
-        if (selected.size === 0) return;
+        if (selected.size === 0) {
+return;
+}
+
         setIsDeleting(true);
         router.delete('/gallery', {
             data: { paths: Array.from(selected) },
@@ -312,6 +345,7 @@ export default function Index({ groups, filters, total }: IndexProps) {
                         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
                             {group.files.map((file) => {
                                 const isSelected = selected.has(file.path);
+
                                 return (
                                     <div
                                         key={file.path}
