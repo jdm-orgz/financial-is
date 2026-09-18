@@ -9,6 +9,7 @@ use App\Domain\UserAccess\Models\User;
 use App\Enums\TransactionStatus;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Crypt;
+use Lauthz\Facades\Enforcer;
 use Tests\TestCase;
 
 class AdminTransactionControllerTest extends TestCase
@@ -18,7 +19,7 @@ class AdminTransactionControllerTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->withoutMiddleware();
+        Enforcer::shouldReceive('enforce')->andReturn(true);
         $this->admin = User::factory()->create();
         $this->outlet = Outlet::factory()->create();
         $this->chair = Chair::factory()->create(['outlet_id' => $this->outlet->id]);
@@ -35,9 +36,16 @@ class AdminTransactionControllerTest extends TestCase
         $response->assertStatus(200);
     }
 
-    public function test_all()
+    public function test_index_with_filters()
     {
-        $response = $this->actingAs($this->admin)->get('/admin/transactions/all');
+        $spgUser = User::factory()->create(['username' => 'spg123']);
+        $supervisorUser = User::factory()->create(['username' => 'super123']);
+
+        $response = $this->actingAs($this->admin)->get('/admin/transactions?spg_username=spg123&supervisor_username=super123&start_date=2026-09-01&end_date=2026-09-30');
+        $response->assertStatus(200);
+
+        // Test non-existent users
+        $response = $this->actingAs($this->admin)->get('/admin/transactions?spg_username=nonexistent&supervisor_username=nonexistent');
         $response->assertStatus(200);
     }
 
@@ -57,7 +65,7 @@ class AdminTransactionControllerTest extends TestCase
     {
         $this->transaction->update(['status' => TransactionStatus::Draft]);
         $response = $this->actingAs($this->admin)->get('/admin/transactions/'.Crypt::encryptString($this->transaction->id).'/compare');
-        $response->assertStatus(403);
+        $response->assertRedirect()->assertSessionHas('toast');
     }
 
     public function test_store_system_income_success()

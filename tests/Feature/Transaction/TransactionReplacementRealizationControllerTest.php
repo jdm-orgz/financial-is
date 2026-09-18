@@ -13,6 +13,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Storage;
+use Lauthz\Facades\Enforcer;
 use Tests\TestCase;
 
 class TransactionReplacementRealizationControllerTest extends TestCase
@@ -22,7 +23,7 @@ class TransactionReplacementRealizationControllerTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->withoutMiddleware();
+        Enforcer::shouldReceive('enforce')->andReturn(true);
         $this->user = User::factory()->create();
         $this->outlet = Outlet::factory()->create();
         $this->chair1 = Chair::factory()->create(['outlet_id' => $this->outlet->id]);
@@ -107,7 +108,7 @@ class TransactionReplacementRealizationControllerTest extends TestCase
 
     public function test_update_invalid_ids()
     {
-        $response = $this->actingAs($this->user)->put('/transactions/invalid/replacement-realizations/invalid', []);
+        $response = $this->actingAs($this->user)->put('/transactions/'.Crypt::encryptString($this->transaction->id).'/replacement-realizations/invalid', []);
         $response->assertStatus(404);
     }
 
@@ -127,7 +128,7 @@ class TransactionReplacementRealizationControllerTest extends TestCase
 
     public function test_destroy_invalid_ids()
     {
-        $response = $this->actingAs($this->user)->delete('/transactions/invalid/replacement-realizations/invalid');
+        $response = $this->actingAs($this->user)->delete('/transactions/'.Crypt::encryptString($this->transaction->id).'/replacement-realizations/invalid');
         $response->assertStatus(404);
     }
 
@@ -143,6 +144,97 @@ class TransactionReplacementRealizationControllerTest extends TestCase
             'proof_video' => UploadedFile::fake()->create('proof.mp4', 100, 'video/mp4'),
         ]);
 
+        $response->assertStatus(404);
+    }
+
+    public function test_update_invalid_chair_id()
+    {
+        $realization = TransactionReplacementRealization::factory()->create([
+            'transaction_id' => $this->transaction->id,
+            'problem_chair_id' => $this->chair1->id,
+            'replacement_chair_id' => $this->chair2->id,
+        ]);
+
+        $response = $this->actingAs($this->user)->put(
+            '/transactions/'.Crypt::encryptString($this->transaction->id).'/replacement-realizations/'.Crypt::encryptString($realization->id),
+            [
+                'problem_chair_id' => 'invalid-id',
+                'amount' => 100000,
+            ]
+        );
+
+        $response->assertStatus(404);
+    }
+
+    public function test_destroy_proof_image_success()
+    {
+        $realization = TransactionReplacementRealization::factory()->create([
+            'transaction_id' => $this->transaction->id,
+            'proof_image_path' => 'proof_image.jpg',
+        ]);
+        Storage::disk('public')->put('proof_image.jpg', 'content');
+
+        $response = $this->actingAs($this->user)->delete(
+            '/transactions/'.Crypt::encryptString($this->transaction->id).'/replacement-realizations/'.Crypt::encryptString($realization->id).'/proof/image'
+        );
+
+        $response->assertRedirect();
+        $this->assertDatabaseHas('transaction_replacement_realizations', [
+            'id' => $realization->id,
+            'proof_image_path' => null,
+        ]);
+        Storage::disk('public')->assertMissing('proof_image.jpg');
+    }
+
+    public function test_destroy_proof_video_success()
+    {
+        $realization = TransactionReplacementRealization::factory()->create([
+            'transaction_id' => $this->transaction->id,
+            'proof_video_path' => 'proof_video.mp4',
+        ]);
+        Storage::disk('public')->put('proof_video.mp4', 'content');
+
+        $response = $this->actingAs($this->user)->delete(
+            '/transactions/'.Crypt::encryptString($this->transaction->id).'/replacement-realizations/'.Crypt::encryptString($realization->id).'/proof/video'
+        );
+
+        $response->assertRedirect();
+        $this->assertDatabaseHas('transaction_replacement_realizations', [
+            'id' => $realization->id,
+            'proof_video_path' => null,
+        ]);
+        Storage::disk('public')->assertMissing('proof_video.mp4');
+    }
+
+    public function test_destroy_proof_invalid_ids()
+    {
+        $response = $this->actingAs($this->user)->delete('/transactions/'.Crypt::encryptString($this->transaction->id).'/replacement-realizations/invalid/proof/image');
+        $response->assertStatus(404);
+    }
+
+    public function test_destroy_proof_invalid_transaction()
+    {
+        $otherTransaction = Transaction::factory()->create([
+            'created_by' => $this->user->id,
+            'status' => TransactionStatus::Draft,
+        ]);
+        $realization = TransactionReplacementRealization::factory()->create([
+            'transaction_id' => $otherTransaction->id,
+            'proof_image_path' => 'proof_image.jpg',
+        ]);
+
+        $response = $this->actingAs($this->user)->delete('/transactions/'.Crypt::encryptString($this->transaction->id).'/replacement-realizations/'.Crypt::encryptString($realization->id).'/proof/image');
+        $response->assertStatus(404);
+    }
+
+    public function test_destroy_proof_invalid_type()
+    {
+        $realization = TransactionReplacementRealization::factory()->create([
+            'transaction_id' => $this->transaction->id,
+            'proof_image_path' => 'proof_image.jpg',
+        ]);
+
+        $response = $this->actingAs($this->user)->delete('/transactions/'.Crypt::encryptString($this->transaction->id).'/replacement-realizations/'.Crypt::encryptString($realization->id).'/proof/invalid_type');
         $response->assertStatus(404);
     }
 }

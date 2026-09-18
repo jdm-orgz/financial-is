@@ -1,5 +1,5 @@
 import { Head, Link, router } from '@inertiajs/react';
-import { Plus, Eye, Trash2 } from 'lucide-react';
+import { Plus, Eye, Pencil, Trash2, ArrowUpDown, ArrowDown, ArrowUp } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { DeleteModal } from '@/components/delete-modal';
 import type { PaginationLink } from '@/components/pagination';
@@ -53,6 +53,10 @@ interface IndexProps {
     filters: {
         search?: string;
         status?: string;
+        sort_by?: string;
+        sort_direction?: string;
+        start_date?: string;
+        end_date?: string;
     };
     per_page: number;
     statusOptions: StatusOption[];
@@ -66,6 +70,8 @@ export default function Index({
 }: IndexProps) {
     const [transactionToDelete, setTransactionToDelete] = useState<number | null>(null);
     const [search, setSearch] = useState(filters.search || '');
+    const [startDate, setStartDate] = useState(filters.start_date || '');
+    const [endDate, setEndDate] = useState(filters.end_date || '');
     const prevSearch = useRef(search);
 
     useEffect(() => {
@@ -77,14 +83,22 @@ export default function Index({
         const timeoutId = setTimeout(() => {
             router.get(
                 window.location.pathname,
-                { ...filters, search, per_page },
-                { preserveState: true, preserveScroll: true, replace: true },
+                { ...filters, search, per_page, start_date: startDate, end_date: endDate },
+                { preserveState: true, preserveScroll: true },
             );
         }, 300);
 
         return () => clearTimeout(timeoutId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [search]);
+
+    const handleDateFilter = () => {
+        router.get(
+            window.location.pathname,
+            { ...filters, search, per_page, start_date: startDate, end_date: endDate },
+            { preserveState: true, preserveScroll: true },
+        );
+    };
 
     const handleDelete = () => {
         if (transactionToDelete !== null) {
@@ -97,30 +111,47 @@ export default function Index({
     const handleStatusFilter = (value: string) => {
         router.get(
             window.location.pathname,
-            { ...filters, status: value === 'all' ? undefined : value, search, per_page },
+            { ...filters, status: value === 'all' ? undefined : value, search, per_page, start_date: startDate, end_date: endDate },
             { preserveState: true, preserveScroll: true },
         );
+    };
+
+    const handleSort = (field: string) => {
+        const direction = filters.sort_by === field && filters.sort_direction === 'asc' ? 'desc' : 'asc';
+        router.get(
+            window.location.pathname,
+            { ...filters, sort_by: field, sort_direction: direction, per_page, search, start_date: startDate, end_date: endDate },
+            { preserveState: true, preserveScroll: true }
+        );
+    };
+
+    const renderSortIcon = (field: string) => {
+        if (filters.sort_by !== field) {
+return <ArrowUpDown className="ml-2 h-4 w-4" />;
+}
+
+        return filters.sort_direction === 'asc' ? <ArrowUp className="ml-2 h-4 w-4" /> : <ArrowDown className="ml-2 h-4 w-4" />;
     };
 
     return (
         <>
             <Head title="Transactions" />
             <div className="flex h-full flex-1 flex-col gap-4 p-4">
-                <div className="flex items-center justify-between">
-                    <h1 className="text-2xl font-bold">Transactions</h1>
-                    <div className="flex items-center gap-4">
+                <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                    <h1 className="text-2xl font-bold">Create Transactions</h1>
+                    <div className="flex flex-wrap items-center gap-4">
                         <Input
                             type="search"
                             placeholder="Search outlet..."
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
-                            className="w-64"
+                            className="w-full sm:w-64"
                         />
                         <Select
                             value={filters.status || 'all'}
                             onValueChange={handleStatusFilter}
                         >
-                            <SelectTrigger className="w-48">
+                            <SelectTrigger className="w-full sm:w-48">
                                 <SelectValue placeholder="Filter Status" />
                             </SelectTrigger>
                             <SelectContent>
@@ -132,6 +163,28 @@ export default function Index({
                                 ))}
                             </SelectContent>
                         </Select>
+                        <div className="flex flex-wrap items-center gap-2 border rounded-md px-2 py-1 w-full sm:w-auto">
+                            <span className="text-sm text-muted-foreground whitespace-nowrap">From:</span>
+                            <Input
+                                type="date"
+                                value={startDate}
+                                onChange={(e) => setStartDate(e.target.value)}
+                                onClick={(e) => 'showPicker' in e.currentTarget && (e.currentTarget as HTMLInputElement).showPicker()}
+                                onKeyDown={(e) => e.preventDefault()}
+                                className="w-full sm:w-36 h-8 border-none focus-visible:ring-0 shadow-none px-1 cursor-pointer"
+                            />
+                            <span className="text-sm text-muted-foreground whitespace-nowrap">To:</span>
+                            <Input
+                                type="date"
+                                value={endDate}
+                                min={startDate}
+                                onChange={(e) => setEndDate(e.target.value)}
+                                onClick={(e) => 'showPicker' in e.currentTarget && (e.currentTarget as HTMLInputElement).showPicker()}
+                                onKeyDown={(e) => e.preventDefault()}
+                                className="w-full sm:w-36 h-8 border-none focus-visible:ring-0 shadow-none px-1 cursor-pointer"
+                            />
+                            <Button size="sm" variant="secondary" onClick={handleDateFilter} className="h-7 px-2 w-full sm:w-auto">Apply</Button>
+                        </div>
                         <Button asChild>
                             <Link href="/transactions/create">
                                 <Plus className="mr-2 h-4 w-4" /> New Transaction
@@ -144,16 +197,25 @@ export default function Index({
                     <Table>
                         <TableHeader>
                             <TableRow>
-                                <TableHead>Outlet</TableHead>
-                                <TableHead>Date</TableHead>
-                                <TableHead>Status</TableHead>
+                                <TableHead className="cursor-pointer" onClick={() => handleSort('outlet')}>
+                                    <div className="flex items-center">Outlet {renderSortIcon('outlet')}</div>
+                                </TableHead>
+                                <TableHead className="cursor-pointer" onClick={() => handleSort('date')}>
+                                    <div className="flex items-center">Date {renderSortIcon('date')}</div>
+                                </TableHead>
+                                <TableHead className="cursor-pointer" onClick={() => handleSort('time')}>
+                                    <div className="flex items-center">Time {renderSortIcon('time')}</div>
+                                </TableHead>
+                                <TableHead className="cursor-pointer" onClick={() => handleSort('status')}>
+                                    <div className="flex items-center">Status {renderSortIcon('status')}</div>
+                                </TableHead>
                                 <TableHead className="text-right">Actions</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             {transactions.data.length === 0 ? (
                                 <TableRow>
-                                    <TableCell colSpan={4} className="h-24 text-center">
+                                    <TableCell colSpan={5} className="h-24 text-center">
                                         No transaction data found.
                                     </TableCell>
                                 </TableRow>
@@ -164,6 +226,7 @@ export default function Index({
                                             {tx.outlet.name}
                                         </TableCell>
                                         <TableCell>{tx.date}</TableCell>
+                                        <TableCell>{tx.created_at ? new Date(tx.created_at).toTimeString().substring(0, 8) : '-'}</TableCell>
                                         <TableCell>
                                             <Badge variant={statusVariantMap[tx.status] || 'secondary'}>
                                                 {statusLabelMap[tx.status] || tx.status}
@@ -173,7 +236,11 @@ export default function Index({
                                             <div className="flex items-center justify-end gap-2">
                                                 <Button variant="ghost" size="icon" asChild>
                                                     <Link href={`/transactions/${tx.id}`}>
-                                                        <Eye className="h-4 w-4" />
+                                                        {tx.status === 'draft' || tx.status === 'correction' ? (
+                                                            <Pencil className="h-4 w-4 text-orange-600" />
+                                                        ) : (
+                                                            <Eye className="h-4 w-4" />
+                                                        )}
                                                     </Link>
                                                 </Button>
                                                 {tx.status === 'draft' && (
@@ -204,7 +271,7 @@ export default function Index({
                                 onValueChange={(value) => {
                                     router.get(
                                         window.location.pathname,
-                                        { ...filters, per_page: value, search },
+                                        { ...filters, per_page: value, search, start_date: startDate, end_date: endDate },
                                         { preserveState: true, preserveScroll: true },
                                     );
                                 }}
@@ -243,6 +310,6 @@ export default function Index({
 
 Index.layout = {
     breadcrumbs: [
-        { title: 'Transactions', href: '/transactions' },
+        { title: 'Create Transactions', href: '/transactions' },
     ],
 };

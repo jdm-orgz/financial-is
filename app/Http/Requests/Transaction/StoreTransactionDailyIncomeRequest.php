@@ -22,7 +22,7 @@ class StoreTransactionDailyIncomeRequest extends FormRequest
         return [
             'incomes' => ['required', 'array', 'min:1'],
             'incomes.*.chair_id' => ['required', 'string'],
-            'incomes.*.amount' => ['required', 'numeric', 'min:1'],
+            'incomes.*.amount' => ['required', 'numeric', 'min:0'],
         ];
     }
 }

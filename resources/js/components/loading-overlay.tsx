@@ -12,11 +12,20 @@ export function LoadingOverlay() {
                 return;
             }
 
+            // Ignore when progress is explicitly hidden (e.g. real-time updates, polling)
+            if (event.detail?.visit?.showProgress === false) {
+                return;
+            }
+
             setIsLoading(true);
         });
 
         const removeFinishListener = router.on('finish', (event: any) => {
             if (event.detail?.visit?.prefetch) {
+                return;
+            }
+
+            if (event.detail?.visit?.showProgress === false) {
                 return;
             }
 

@@ -17,6 +17,7 @@ export interface Transaction {
     supervisor_notes: string | null;
     admin_notes: string | null;
     created_by: { id: number; name: string };
+    created_at: string;
     supervisor_actioned_by: { id: number; name: string } | null;
     supervisor_actioned_at: string | null;
     admin_actioned_by: { id: number; name: string } | null;

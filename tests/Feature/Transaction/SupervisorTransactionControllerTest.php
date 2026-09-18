@@ -8,6 +8,7 @@ use App\Domain\UserAccess\Models\User;
 use App\Enums\TransactionStatus;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Crypt;
+use Lauthz\Facades\Enforcer;
 use Tests\TestCase;
 
 class SupervisorTransactionControllerTest extends TestCase
@@ -17,7 +18,7 @@ class SupervisorTransactionControllerTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->withoutMiddleware();
+        Enforcer::shouldReceive('enforce')->andReturn(true);
         $this->supervisor = User::factory()->create();
         $this->outlet = Outlet::factory()->create();
         $this->supervisor->outlets()->attach($this->outlet->id, ['is_active' => '1', 'created_by' => $this->supervisor->id]);
@@ -31,6 +32,17 @@ class SupervisorTransactionControllerTest extends TestCase
     public function test_index()
     {
         $response = $this->actingAs($this->supervisor)->get('/supervisor/transactions');
+        $response->assertStatus(200);
+    }
+
+    public function test_index_with_spg_username_filter()
+    {
+        $spgUser = User::factory()->create(['username' => 'spg123']);
+        $response = $this->actingAs($this->supervisor)->get('/supervisor/transactions?spg_username=spg123');
+        $response->assertStatus(200);
+
+        // Test non-existent user
+        $response = $this->actingAs($this->supervisor)->get('/supervisor/transactions?spg_username=nonexistent');
         $response->assertStatus(200);
     }
 

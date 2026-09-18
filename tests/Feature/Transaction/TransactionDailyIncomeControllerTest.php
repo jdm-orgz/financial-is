@@ -9,6 +9,7 @@ use App\Domain\UserAccess\Models\User;
 use App\Enums\TransactionStatus;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Crypt;
+use Lauthz\Facades\Enforcer;
 use Tests\TestCase;
 
 class TransactionDailyIncomeControllerTest extends TestCase
@@ -18,7 +19,7 @@ class TransactionDailyIncomeControllerTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->withoutMiddleware();
+        Enforcer::shouldReceive('enforce')->andReturn(true);
         $this->user = User::factory()->create();
         $this->outlet = Outlet::factory()->create();
         $this->chair = Chair::factory()->create(['outlet_id' => $this->outlet->id]);

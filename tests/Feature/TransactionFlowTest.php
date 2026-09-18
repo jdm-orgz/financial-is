@@ -10,6 +10,7 @@ use App\Domain\UserAccess\Models\User;
 use App\Enums\TransactionStatus;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Crypt;
+use Lauthz\Facades\Enforcer;
 use Tests\TestCase;
 
 class TransactionFlowTest extends TestCase
@@ -18,7 +19,7 @@ class TransactionFlowTest extends TestCase
 
     public function test_spg_can_create_transaction_and_submit()
     {
-        $this->withoutMiddleware();
+        Enforcer::shouldReceive('enforce')->andReturn(true);
 
         $user = User::factory()->create();
 

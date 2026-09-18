@@ -10,6 +10,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Storage;
+use Lauthz\Facades\Enforcer;
 use Tests\TestCase;
 
 class TransactionTransferProofControllerTest extends TestCase
@@ -19,7 +20,7 @@ class TransactionTransferProofControllerTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->withoutMiddleware();
+        Enforcer::shouldReceive('enforce')->andReturn(true);
         $this->user = User::factory()->create();
         $this->transaction = Transaction::factory()->create([
             'created_by' => $this->user->id,
@@ -64,7 +65,7 @@ class TransactionTransferProofControllerTest extends TestCase
 
     public function test_destroy_invalid_ids()
     {
-        $response = $this->actingAs($this->user)->delete('/transactions/invalid/transfer-proofs/invalid');
+        $response = $this->actingAs($this->user)->delete('/transactions/'.Crypt::encryptString($this->transaction->id).'/transfer-proofs/invalid');
         $response->assertStatus(404);
     }
 }

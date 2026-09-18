@@ -11,6 +11,7 @@ use App\Domain\UserAccess\Models\User;
 use App\Enums\TransactionStatus;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Crypt;
+use Lauthz\Facades\Enforcer;
 use Tests\TestCase;
 
 class TransactionControllerTest extends TestCase
@@ -20,7 +21,7 @@ class TransactionControllerTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->withoutMiddleware();
+        Enforcer::shouldReceive('enforce')->andReturn(true);
         $this->user = User::factory()->create();
         $this->outlet = Outlet::factory()->create();
         $this->user->outlets()->attach($this->outlet->id, ['is_active' => '1', 'created_by' => $this->user->id]);
@@ -37,6 +38,14 @@ class TransactionControllerTest extends TestCase
     public function test_create()
     {
         $response = $this->actingAs($this->user)->get('/transactions/create');
+        $response->assertStatus(200);
+    }
+
+    public function test_create_as_super_admin()
+    {
+        $superAdminRole = \App\Domain\UserAccess\Models\Role::factory()->create(['name' => 'super_admin']);
+        $superAdmin = User::factory()->create(['role_id' => $superAdminRole->id]);
+        $response = $this->actingAs($superAdmin)->get('/transactions/create');
         $response->assertStatus(200);
     }
 

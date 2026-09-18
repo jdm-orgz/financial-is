@@ -25,7 +25,7 @@ class StoreTransactionReplacementRealizationRequest extends FormRequest
             'problem_chair_id' => ['required', 'string'],
             'replacement_chair_id' => ['required', 'string'],
             'payment_method' => ['required', new Enum(PaymentMethod::class)],
-            'amount' => ['required', 'numeric', 'min:1'],
+            'amount' => ['required', 'numeric', 'min:0'],
             'proof_image' => ['required_if:payment_method,qris', 'nullable', 'image', 'max:5120'],
             'proof_video' => ['required', 'file', 'mimetypes:video/mp4,video/quicktime,video/x-msvideo', 'max:51200'],
         ];

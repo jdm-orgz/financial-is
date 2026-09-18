@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Transaction;
 
 use App\Domain\Transaction\Repositories\TransactionDailyIncomeRepositoryInterface;
 use App\Domain\Transaction\Repositories\TransactionRepositoryInterface;
-use App\Enums\TransactionStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Transaction\StoreTransactionDailyIncomeRequest;
 use Illuminate\Contracts\Encryption\DecryptException;
@@ -24,23 +23,7 @@ class TransactionDailyIncomeController extends Controller
      */
     public function upsert(StoreTransactionDailyIncomeRequest $request, string $transactionId): RedirectResponse
     {
-        try {
-            $decryptedId = (string) Crypt::decryptString($transactionId);
-        } catch (DecryptException $e) {
-            abort(404);
-        }
-
-        $transaction = $this->transactionRepository->findById($decryptedId);
-
-        if (! $transaction || $transaction->created_by !== auth()->id()) {
-            abort(404);
-        }
-
-        if (! in_array($transaction->status, [TransactionStatus::Draft, TransactionStatus::Correction])) {
-            Inertia::flash('toast', ['type' => 'error', 'message' => 'Transaction is not in an editable status.']);
-
-            return redirect()->back();
-        }
+        $decryptedId = request()->attributes->get('decrypted_transaction_id');
 
         // Decrypt chair_ids
         $items = collect($request->validated('incomes'))->map(function ($item) {

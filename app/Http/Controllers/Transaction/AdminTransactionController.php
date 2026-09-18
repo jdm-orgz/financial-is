@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Transaction;
 use App\Domain\Transaction\Actions\CalculateVarianceAction;
 use App\Domain\Transaction\Repositories\TransactionRepositoryInterface;
 use App\Domain\Transaction\Repositories\TransactionSystemIncomeRepositoryInterface;
+use App\Domain\UserAccess\Models\User;
 use App\Enums\TransactionStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Transaction\StoreTransactionSystemIncomeRequest;
@@ -28,34 +29,47 @@ class AdminTransactionController extends Controller
      */
     public function index(): Response
     {
+        $search = request('search');
         $status = request('status');
+        $startDate = request('start_date');
+        $endDate = request('end_date');
+        $spgUsername = request('spg_username');
+        $supervisorUsername = request('supervisor_username');
         $perPage = (int) request('per_page', 10);
 
-        $transactions = $this->transactionRepository->getPaginatedForAdmin($perPage, $status);
+        $decryptedSpgId = null;
+        if ($spgUsername && $spgUsername !== 'all') {
+            $spgUser = User::where('username', $spgUsername)->first();
+            if ($spgUser) {
+                $decryptedSpgId = $spgUser->id;
+            }
+        }
+
+        $decryptedSupervisorId = null;
+        if ($supervisorUsername && $supervisorUsername !== 'all') {
+            $supervisorUser = User::where('username', $supervisorUsername)->first();
+            if ($supervisorUser) {
+                $decryptedSupervisorId = $supervisorUser->id;
+            }
+        }
+
+        $transactions = $this->transactionRepository->getPaginatedForAdmin($perPage, $search, $status, $startDate, $endDate, $decryptedSpgId, $decryptedSupervisorId);
+
+        $spgs = User::whereHas('role', function ($q) {
+            $q->where('name', 'spg');
+        })->get(['id', 'name', 'username']);
+
+        $supervisors = User::whereHas('role', function ($q) {
+            $q->where('name', 'supervisor');
+        })->get(['id', 'name', 'username']);
 
         return Inertia::render('Admin/Transactions/Index', [
             'transactions' => $transactions,
-            'filters' => request()->only(['status']),
-            'per_page' => $perPage,
-        ]);
-    }
-
-    /**
-     * Display all transactions (all statuses).
-     */
-    public function all(): Response
-    {
-        $search = request('search');
-        $status = request('status');
-        $perPage = (int) request('per_page', 10);
-
-        $transactions = $this->transactionRepository->getPaginatedAll($perPage, $search, $status);
-
-        return Inertia::render('Admin/Transactions/All', [
-            'transactions' => $transactions,
-            'filters' => request()->only(['search', 'status']),
+            'filters' => request()->only(['search', 'status', 'start_date', 'end_date', 'spg_username', 'supervisor_username']),
             'per_page' => $perPage,
             'statusOptions' => TransactionStatus::options(),
+            'spgs' => $spgs,
+            'supervisors' => $supervisors,
         ]);
     }
 
@@ -64,21 +78,7 @@ class AdminTransactionController extends Controller
      */
     public function showCompare(string $transactionId): Response
     {
-        try {
-            $decryptedId = (string) Crypt::decryptString($transactionId);
-        } catch (DecryptException $e) {
-            abort(404);
-        }
-
-        $transaction = $this->transactionRepository->findById($decryptedId);
-
-        if (! $transaction) {
-            abort(404);
-        }
-
-        if ($transaction->status !== TransactionStatus::Comparing) {
-            abort(403);
-        }
+        $transaction = request()->attributes->get('resolved_transaction');
 
         $chairs = $transaction->outlet->chairs()->where('is_active', '1')->get();
 
@@ -93,23 +93,7 @@ class AdminTransactionController extends Controller
      */
     public function storeSystemIncome(StoreTransactionSystemIncomeRequest $request, string $transactionId): RedirectResponse
     {
-        try {
-            $decryptedId = (string) Crypt::decryptString($transactionId);
-        } catch (DecryptException $e) {
-            abort(404);
-        }
-
-        $transaction = $this->transactionRepository->findById($decryptedId);
-
-        if (! $transaction) {
-            abort(404);
-        }
-
-        if ($transaction->status !== TransactionStatus::Comparing) {
-            Inertia::flash('toast', ['type' => 'error', 'message' => 'Transaction is not in comparing status.']);
-
-            return redirect()->back();
-        }
+        $decryptedId = request()->attributes->get('decrypted_transaction_id');
 
         // Decrypt chair_ids
         $items = collect($request->validated('system_incomes'))->map(function ($item) {
@@ -140,17 +124,7 @@ class AdminTransactionController extends Controller
      */
     public function showResult(string $transactionId): Response
     {
-        try {
-            $decryptedId = (string) Crypt::decryptString($transactionId);
-        } catch (DecryptException $e) {
-            abort(404);
-        }
-
-        $transaction = $this->transactionRepository->findById($decryptedId);
-
-        if (! $transaction) {
-            abort(404);
-        }
+        $transaction = request()->attributes->get('resolved_transaction');
 
         $comparison = $this->calculateVarianceAction->execute($transaction);
 
@@ -165,23 +139,7 @@ class AdminTransactionController extends Controller
      */
     public function approve(string $transactionId): RedirectResponse
     {
-        try {
-            $decryptedId = (string) Crypt::decryptString($transactionId);
-        } catch (DecryptException $e) {
-            abort(404);
-        }
-
-        $transaction = $this->transactionRepository->findById($decryptedId);
-
-        if (! $transaction) {
-            abort(404);
-        }
-
-        if ($transaction->status !== TransactionStatus::Compared) {
-            Inertia::flash('toast', ['type' => 'error', 'message' => 'Transaction is not in an approvable status.']);
-
-            return redirect()->back();
-        }
+        $decryptedId = request()->attributes->get('decrypted_transaction_id');
 
         $this->transactionRepository->updateStatus($decryptedId, TransactionStatus::Done);
 
@@ -199,23 +157,7 @@ class AdminTransactionController extends Controller
             'admin_notes' => ['required', 'string', 'max:1000'],
         ]);
 
-        try {
-            $decryptedId = (string) Crypt::decryptString($transactionId);
-        } catch (DecryptException $e) {
-            abort(404);
-        }
-
-        $transaction = $this->transactionRepository->findById($decryptedId);
-
-        if (! $transaction) {
-            abort(404);
-        }
-
-        if ($transaction->status !== TransactionStatus::Compared) {
-            Inertia::flash('toast', ['type' => 'error', 'message' => 'Transaction is not in a rejectable status.']);
-
-            return redirect()->back();
-        }
+        $decryptedId = request()->attributes->get('decrypted_transaction_id');
 
         $this->transactionRepository->updateStatus($decryptedId, TransactionStatus::Correction, [
             'admin_notes' => $validated['admin_notes'],

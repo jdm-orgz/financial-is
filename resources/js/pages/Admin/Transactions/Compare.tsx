@@ -1,5 +1,7 @@
 import { Head, Link, useForm } from '@inertiajs/react';
 import { ChevronLeft, Save } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { ConfirmModal } from '@/components/confirm-modal';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -23,15 +25,59 @@ export default function Compare({ transaction, chairs }: CompareProps) {
         post, 
         processing,
     } = useForm({
-        system_incomes: chairs.map(chair => ({
-            chair_id: chair.id,
-            amount: 0, // Admin inputs blindly, existing data is not shown by design
-        })),
+        system_incomes: chairs.map(chair => {
+            const existing = transaction.system_incomes?.find(si => si.chair?.name === chair.name);
+
+            return {
+                chair_id: chair.id,
+                amount: existing ? String(Number(existing.amount)) : '0',
+            };
+        }),
     });
+
+    
+    useEffect(() => {  
+        setData('system_incomes', chairs.map(chair => {
+            const existing = transaction.system_incomes?.find(si => si.chair?.name === chair.name);
+
+            return {
+                chair_id: chair.id,
+                amount: existing ? String(Number(existing.amount)) : '0',
+            };
+        }));
+    }, [transaction.system_incomes, chairs]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    const [confirmState, setConfirmState] = useState<{
+        isOpen: boolean;
+        title: string;
+        description: string;
+        confirmText: string;
+        confirmVariant: 'default' | 'destructive' | 'secondary' | 'outline';
+        action: () => void;
+    }>({
+        isOpen: false,
+        title: '',
+        description: '',
+        confirmText: '',
+        confirmVariant: 'default',
+        action: () => {},
+    });
+
+    const openConfirm = (title: string, description: string, confirmText: string, confirmVariant: any, action: () => void) => {
+        setConfirmState({ isOpen: true, title, description, confirmText, confirmVariant, action });
+    };
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        post(`/admin/transactions/${transaction.id}/system-incomes`);
+        openConfirm(
+            'Save & Compare',
+            'Are you sure you want to save the system income data and proceed to comparison?',
+            'Proceed',
+            'default',
+            () => {
+                post(`/admin/transactions/${transaction.id}/system-incomes`);
+            }
+        );
     };
 
     return (
@@ -41,9 +87,13 @@ export default function Compare({ transaction, chairs }: CompareProps) {
                 <div className="flex items-center justify-between">
                     <div>
                         <h1 className="text-2xl font-bold">Input System Data</h1>
-                        <p className="text-sm text-muted-foreground">
-                            {transaction.outlet.name} - {transaction.date}
-                        </p>
+                        <div className="text-sm text-muted-foreground mt-1 flex flex-col gap-0.5">
+                            <p>Outlet: {transaction.outlet.name}</p>
+                            <p>Date: {transaction.date.includes('T') ? transaction.date.substring(0, 10) : transaction.date}</p>
+                            {transaction.date.includes('T') && (
+                                <p>Time: {transaction.date.substring(11, 19)}</p>
+                            )}
+                        </div>
                     </div>
                     <div className="flex items-center gap-4">
                         <Button variant="outline" asChild>
@@ -68,18 +118,29 @@ export default function Compare({ transaction, chairs }: CompareProps) {
                                 {chairs.map((chair, index) => (
                                     <div key={chair.id} className="grid grid-cols-3 items-center gap-4 border-b pb-4 last:border-0">
                                         <Label className="col-span-1 text-base">{chair.name}</Label>
-                                        <div className="col-span-2 relative">
-                                            <span className="absolute left-3 top-2.5 text-muted-foreground">Rp</span>
+                                        <div className="col-span-2">
                                             <Input 
                                                 type="number" 
-                                                className="pl-10"
-                                                value={data.system_incomes[index].amount || ''}
+                                                min="0"
+                                                value={data.system_incomes[index].amount}
                                                 onChange={(e) => {
                                                     const newIncomes = [...data.system_incomes];
-                                                    newIncomes[index].amount = parseInt(e.target.value) || 0;
+                                                    let val = e.target.value;
+                                                    
+                                                    if (val !== '') {
+                                                        val = String(Number(val));
+                                                    }
+                                                    
+                                                    newIncomes[index].amount = val;
                                                     setData('system_incomes', newIncomes);
                                                 }}
-                                                placeholder="0"
+                                                onBlur={() => {
+                                                    if (data.system_incomes[index].amount === '') {
+                                                        const newIncomes = [...data.system_incomes];
+                                                        newIncomes[index].amount = '0';
+                                                        setData('system_incomes', newIncomes);
+                                                    }
+                                                }}
                                                 required
                                             />
                                         </div>
@@ -95,6 +156,23 @@ export default function Compare({ transaction, chairs }: CompareProps) {
                     </Card>
                 </div>
             </div>
+
+            <ConfirmModal
+                isOpen={confirmState.isOpen}
+                onOpenChange={(open) => {
+                    if (!open) {
+setConfirmState(prev => ({ ...prev, isOpen: false }));
+}
+                }}
+                onConfirm={() => {
+                    setConfirmState(prev => ({ ...prev, isOpen: false }));
+                    confirmState.action();
+                }}
+                title={confirmState.title}
+                description={confirmState.description}
+                confirmText={confirmState.confirmText}
+                confirmVariant={confirmState.confirmVariant}
+            />
         </>
     );
 }

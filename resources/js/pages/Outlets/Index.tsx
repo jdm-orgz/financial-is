@@ -251,7 +251,7 @@ export default function Index({ outlets, per_page, filters = {} }: IndexProps) {
                                                     <Link
                                                         href={`/outlets/${outlet.id}/edit`}
                                                     >
-                                                        <Pencil className="h-4 w-4" />
+                                                        <Pencil className="h-4 w-4 text-orange-600" />
                                                     </Link>
                                                 </Button>
                                                 <Button

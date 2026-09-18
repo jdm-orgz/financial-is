@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Transaction;
 
 use App\Domain\Transaction\Repositories\TransactionReplacementRealizationRepositoryInterface;
 use App\Domain\Transaction\Repositories\TransactionRepositoryInterface;
-use App\Enums\TransactionStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Transaction\StoreTransactionReplacementRealizationRequest;
 use App\Http\Requests\Transaction\UpdateTransactionReplacementRealizationRequest;
@@ -26,23 +25,7 @@ class TransactionReplacementRealizationController extends Controller
      */
     public function store(StoreTransactionReplacementRealizationRequest $request, string $transactionId): RedirectResponse
     {
-        try {
-            $decryptedTransactionId = (string) Crypt::decryptString($transactionId);
-        } catch (DecryptException $e) {
-            abort(404);
-        }
-
-        $transaction = $this->transactionRepository->findById($decryptedTransactionId);
-
-        if (! $transaction || $transaction->created_by !== auth()->id()) {
-            abort(404);
-        }
-
-        if (! in_array($transaction->status, [TransactionStatus::Draft, TransactionStatus::Correction])) {
-            Inertia::flash('toast', ['type' => 'error', 'message' => 'Transaction is not in an editable status.']);
-
-            return redirect()->back();
-        }
+        $decryptedTransactionId = request()->attributes->get('decrypted_transaction_id');
 
         try {
             $decryptedProblemChairId = (string) Crypt::decryptString($request->validated('problem_chair_id'));
@@ -83,23 +66,12 @@ class TransactionReplacementRealizationController extends Controller
      */
     public function update(UpdateTransactionReplacementRealizationRequest $request, string $transactionId, string $realizationId): RedirectResponse
     {
+        $decryptedTransactionId = request()->attributes->get('decrypted_transaction_id');
+
         try {
-            $decryptedTransactionId = (string) Crypt::decryptString($transactionId);
             $decryptedRealizationId = (string) Crypt::decryptString($realizationId);
         } catch (DecryptException $e) {
             abort(404);
-        }
-
-        $transaction = $this->transactionRepository->findById($decryptedTransactionId);
-
-        if (! $transaction || $transaction->created_by !== auth()->id()) {
-            abort(404);
-        }
-
-        if (! in_array($transaction->status, [TransactionStatus::Draft, TransactionStatus::Correction])) {
-            Inertia::flash('toast', ['type' => 'error', 'message' => 'Transaction is not in an editable status.']);
-
-            return redirect()->back();
         }
 
         $realization = $this->realizationRepository->findById($decryptedRealizationId);
@@ -165,23 +137,12 @@ class TransactionReplacementRealizationController extends Controller
      */
     public function destroy(string $transactionId, string $realizationId): RedirectResponse
     {
+        $decryptedTransactionId = request()->attributes->get('decrypted_transaction_id');
+
         try {
-            $decryptedTransactionId = (string) Crypt::decryptString($transactionId);
             $decryptedRealizationId = (string) Crypt::decryptString($realizationId);
         } catch (DecryptException $e) {
             abort(404);
-        }
-
-        $transaction = $this->transactionRepository->findById($decryptedTransactionId);
-
-        if (! $transaction || $transaction->created_by !== auth()->id()) {
-            abort(404);
-        }
-
-        if (! in_array($transaction->status, [TransactionStatus::Draft, TransactionStatus::Correction])) {
-            Inertia::flash('toast', ['type' => 'error', 'message' => 'Transaction is not in an editable status.']);
-
-            return redirect()->back();
         }
 
         $realization = $this->realizationRepository->findById($decryptedRealizationId);
@@ -201,6 +162,40 @@ class TransactionReplacementRealizationController extends Controller
         $this->realizationRepository->delete($decryptedRealizationId);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Replacement realization deleted successfully.']);
+
+        return redirect()->back();
+    }
+
+    /**
+     * Remove the specified proof file from a replacement realization.
+     */
+    public function destroyProof(string $transactionId, string $realizationId, string $type): RedirectResponse
+    {
+        $decryptedTransactionId = request()->attributes->get('decrypted_transaction_id');
+
+        try {
+            $decryptedRealizationId = (string) Crypt::decryptString($realizationId);
+        } catch (DecryptException $e) {
+            abort(404);
+        }
+
+        $realization = $this->realizationRepository->findById($decryptedRealizationId);
+
+        if (! $realization || $realization->transaction_id !== $decryptedTransactionId) {
+            abort(404);
+        }
+
+        if ($type === 'image' && $realization->proof_image_path) {
+            Storage::disk('public')->delete($realization->proof_image_path);
+            $this->realizationRepository->update($decryptedRealizationId, ['proof_image_path' => null]);
+            Inertia::flash('toast', ['type' => 'success', 'message' => 'Photo proof deleted successfully.']);
+        } elseif ($type === 'video' && $realization->proof_video_path) {
+            Storage::disk('public')->delete($realization->proof_video_path);
+            $this->realizationRepository->update($decryptedRealizationId, ['proof_video_path' => null]);
+            Inertia::flash('toast', ['type' => 'success', 'message' => 'Video proof deleted successfully.']);
+        } else {
+            abort(404);
+        }
 
         return redirect()->back();
     }

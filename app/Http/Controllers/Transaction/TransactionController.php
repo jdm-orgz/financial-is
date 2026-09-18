@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers\Transaction;
 
+use App\Domain\Outlet\Models\Outlet;
 use App\Domain\Outlet\Repositories\ChairRepositoryInterface;
 use App\Domain\Transaction\Repositories\TransactionRepositoryInterface;
 use App\Enums\TransactionStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Transaction\StoreTransactionRequest;
-use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Crypt;
 use Inertia\Inertia;
@@ -27,18 +27,32 @@ class TransactionController extends Controller
     {
         $search = request('search');
         $status = request('status');
+        $sortBy = request('sort_by');
+        $sortDirection = request('sort_direction', 'asc');
+        $startDate = request('start_date', now()->format('Y-m-d'));
+        $endDate = request('end_date', now()->format('Y-m-d'));
         $perPage = (int) request('per_page', 10);
 
+        $user = auth()->user();
+        $isSuperAdmin = $user->role->name === 'super_admin';
+
         $transactions = $this->transactionRepository->getPaginatedForSpg(
-            auth()->id(),
+            $isSuperAdmin ? null : $user->id,
             $perPage,
             $search,
-            $status
+            $status,
+            $sortBy,
+            $sortDirection,
+            $startDate,
+            $endDate
         );
 
         return Inertia::render('Transactions/Index', [
             'transactions' => $transactions,
-            'filters' => request()->only(['search', 'status']),
+            'filters' => array_merge(request()->only(['search', 'status', 'sort_by', 'sort_direction']), [
+                'start_date' => $startDate,
+                'end_date' => $endDate,
+            ]),
             'per_page' => $perPage,
             'statusOptions' => TransactionStatus::options(),
         ]);
@@ -49,7 +63,12 @@ class TransactionController extends Controller
      */
     public function create(): Response
     {
-        $outlets = auth()->user()->outlets()->where('linked_outlets_users.is_active', '1')->get();
+        $user = auth()->user();
+        if ($user->role->name === 'super_admin') {
+            $outlets = Outlet::where('is_active', '1')->get();
+        } else {
+            $outlets = $user->outlets()->where('linked_outlets_users.is_active', '1')->get();
+        }
 
         return Inertia::render('Transactions/Create', [
             'outlets' => $outlets,
@@ -91,17 +110,7 @@ class TransactionController extends Controller
      */
     public function show(string $transactionId): Response
     {
-        try {
-            $decryptedId = (string) Crypt::decryptString($transactionId);
-        } catch (DecryptException $e) {
-            abort(404);
-        }
-
-        $transaction = $this->transactionRepository->findById($decryptedId);
-
-        if (! $transaction || $transaction->created_by !== auth()->id()) {
-            abort(404);
-        }
+        $transaction = request()->attributes->get('resolved_transaction');
 
         $chairs = $transaction->outlet->chairs()->where('is_active', '1')->get();
 
@@ -116,24 +125,8 @@ class TransactionController extends Controller
      */
     public function submit(string $transactionId): RedirectResponse
     {
-        try {
-            $decryptedId = (string) Crypt::decryptString($transactionId);
-        } catch (DecryptException $e) {
-            abort(404);
-        }
-
-        $transaction = $this->transactionRepository->findById($decryptedId);
-
-        if (! $transaction || $transaction->created_by !== auth()->id()) {
-            abort(404);
-        }
-
-        // Must be in draft or correction status
-        if (! in_array($transaction->status, [TransactionStatus::Draft, TransactionStatus::Correction])) {
-            Inertia::flash('toast', ['type' => 'error', 'message' => 'Transaction is not in a submittable status.']);
-
-            return redirect()->back();
-        }
+        $decryptedId = request()->attributes->get('decrypted_transaction_id');
+        $transaction = request()->attributes->get('resolved_transaction');
 
         // Validate: all chairs must have daily income entries
         $outletChairIds = $transaction->outlet->chairs()->where('is_active', '1')->pluck('id');
@@ -164,23 +157,7 @@ class TransactionController extends Controller
      */
     public function destroy(string $transactionId): RedirectResponse
     {
-        try {
-            $decryptedId = (string) Crypt::decryptString($transactionId);
-        } catch (DecryptException $e) {
-            abort(404);
-        }
-
-        $transaction = $this->transactionRepository->findById($decryptedId);
-
-        if (! $transaction || $transaction->created_by !== auth()->id()) {
-            abort(404);
-        }
-
-        if ($transaction->status !== TransactionStatus::Draft) {
-            Inertia::flash('toast', ['type' => 'error', 'message' => 'Only draft transactions can be deleted.']);
-
-            return redirect()->back();
-        }
+        $decryptedId = request()->attributes->get('decrypted_transaction_id');
 
         $this->transactionRepository->delete($decryptedId);
 

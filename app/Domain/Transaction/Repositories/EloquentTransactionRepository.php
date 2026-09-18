@@ -8,14 +8,17 @@ use Illuminate\Pagination\LengthAwarePaginator;
 
 class EloquentTransactionRepository implements TransactionRepositoryInterface
 {
-    public function getPaginatedForSpg(string $spgUserId, int $perPage = 10, ?string $search = null, ?string $status = null): LengthAwarePaginator
+    public function getPaginatedForSpg(?string $spgUserId, int $perPage = 10, ?string $search = null, ?string $status = null, ?string $sortBy = null, string $sortDirection = 'asc', ?string $startDate = null, ?string $endDate = null): LengthAwarePaginator
     {
-        $query = Transaction::with('outlet')
-            ->where('created_by', $spgUserId);
+        $query = Transaction::with('outlet');
+
+        if ($spgUserId) {
+            $query->where('created_by', $spgUserId);
+        }
 
         if ($search) {
             $query->whereHas('outlet', function ($q) use ($search) {
-                $q->where('name', 'like', '%'.$search.'%');
+                $q->whereRaw('LOWER(name) LIKE ?', ['%'.strtolower($search).'%']);
             });
         }
 
@@ -23,58 +26,118 @@ class EloquentTransactionRepository implements TransactionRepositoryInterface
             $query->where('status', $status);
         }
 
-        return $query->orderBy('created_at', 'desc')
-            ->paginate($perPage)
+        if ($startDate) {
+            $query->where('date', '>=', $startDate);
+        }
+
+        if ($endDate) {
+            $query->where('date', '<=', $endDate.' 23:59:59');
+        }
+
+        if ($sortBy) {
+            if ($sortBy === 'outlet') {
+                $query->join('outlets', 'transactions.outlet_id', '=', 'outlets.id')
+                    ->orderBy('outlets.name', $sortDirection === 'desc' ? 'desc' : 'asc')
+                    ->select('transactions.*');
+            } elseif ($sortBy === 'time') {
+                $query->orderBy('created_at', $sortDirection === 'desc' ? 'desc' : 'asc');
+            } else {
+                $query->orderBy($sortBy, $sortDirection === 'desc' ? 'desc' : 'asc');
+            }
+        } else {
+            $query->orderBy('created_at', 'desc');
+        }
+
+        return $query->paginate($perPage)
             ->withQueryString();
     }
 
-    public function getPaginatedForSupervisor(string $supervisorId, int $perPage = 10, ?string $status = null): LengthAwarePaginator
+    public function getPaginatedForSupervisor(?string $supervisorId, int $perPage = 10, ?string $search = null, ?string $status = null, ?string $sortBy = null, string $sortDirection = 'asc', ?string $startDate = null, ?string $endDate = null, ?string $spgId = null): LengthAwarePaginator
     {
-        $query = Transaction::with('outlet', 'createdBy')
-            ->whereHas('outlet', function ($q) use ($supervisorId) {
+        $query = Transaction::with('outlet', 'createdBy');
+
+        if ($supervisorId) {
+            $query->whereHas('outlet', function ($q) use ($supervisorId) {
                 $q->whereHas('users', function ($q2) use ($supervisorId) {
                     $q2->where('users.id', $supervisorId);
                 });
             });
-
-        if ($status) {
-            $query->where('status', $status);
-        } else {
-            $query->where('status', TransactionStatus::Approval);
         }
-
-        return $query->orderBy('created_at', 'desc')
-            ->paginate($perPage)
-            ->withQueryString();
-    }
-
-    public function getPaginatedForAdmin(int $perPage = 10, ?string $status = null): LengthAwarePaginator
-    {
-        $query = Transaction::with('outlet', 'createdBy');
-
-        if ($status) {
-            $query->where('status', $status);
-        } else {
-            $query->where('status', TransactionStatus::Comparing);
-        }
-
-        return $query->orderBy('created_at', 'desc')
-            ->paginate($perPage)
-            ->withQueryString();
-    }
-
-    public function getPaginatedAll(int $perPage = 10, ?string $search = null, ?string $status = null): LengthAwarePaginator
-    {
-        $query = Transaction::with('outlet', 'createdBy');
 
         if ($search) {
             $query->whereHas('outlet', function ($q) use ($search) {
-                $q->where('name', 'like', '%'.$search.'%');
+                $q->whereRaw('LOWER(name) LIKE ?', ['%'.strtolower($search).'%']);
             });
         }
 
-        if ($status) {
+        if ($status && $status !== 'all') {
             $query->where('status', $status);
+        } elseif (! $status) {
+            $query->where('status', TransactionStatus::Approval);
+        }
+
+        if ($startDate) {
+            $query->where('date', '>=', $startDate);
+        }
+
+        if ($endDate) {
+            $query->where('date', '<=', $endDate.' 23:59:59');
+        }
+
+        if ($spgId && $spgId !== 'all') {
+            $query->where('created_by', $spgId);
+        }
+
+        if ($sortBy) {
+            if ($sortBy === 'outlet') {
+                $query->join('outlets', 'transactions.outlet_id', '=', 'outlets.id')
+                    ->orderBy('outlets.name', $sortDirection === 'desc' ? 'desc' : 'asc')
+                    ->select('transactions.*');
+            } elseif ($sortBy === 'spg') {
+                $query->join('users', 'transactions.created_by', '=', 'users.id')
+                    ->orderBy('users.name', $sortDirection === 'desc' ? 'desc' : 'asc')
+                    ->select('transactions.*');
+            } elseif ($sortBy === 'time') {
+                $query->orderBy('created_at', $sortDirection === 'desc' ? 'desc' : 'asc');
+            } else {
+                $query->orderBy($sortBy, $sortDirection === 'desc' ? 'desc' : 'asc');
+            }
+        } else {
+            $query->orderBy('created_at', 'desc');
+        }
+
+        return $query->paginate($perPage)
+            ->withQueryString();
+    }
+
+    public function getPaginatedForAdmin(int $perPage = 10, ?string $search = null, ?string $status = null, ?string $startDate = null, ?string $endDate = null, ?string $spgId = null, ?string $supervisorId = null): LengthAwarePaginator
+    {
+        $query = Transaction::with('outlet', 'createdBy', 'supervisorActionedBy');
+
+        if ($search) {
+            $query->whereHas('outlet', function ($q) use ($search) {
+                $q->whereRaw('LOWER(name) LIKE ?', ['%'.strtolower($search).'%']);
+            });
+        }
+
+        if ($status && $status !== 'all') {
+            $query->where('status', $status);
+        }
+
+        if ($startDate) {
+            $query->where('date', '>=', $startDate);
+        }
+
+        if ($endDate) {
+            $query->where('date', '<=', $endDate.' 23:59:59');
+        }
+
+        if ($spgId && $spgId !== 'all') {
+            $query->where('created_by', $spgId);
+        }
+
+        if ($supervisorId && $supervisorId !== 'all') {
+            $query->where('supervisor_actioned_by', $supervisorId);
         }
 
         return $query->orderBy('created_at', 'desc')
