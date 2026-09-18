@@ -1,8 +1,7 @@
 import { Head, router } from '@inertiajs/react';
-import { PlaceholderPattern } from '@/components/ui/placeholder-pattern';
-import { dashboard } from '@/routes';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { useState } from 'react';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { dashboard } from '@/routes';
 
 interface DashboardProps {
     userRole: string;
@@ -40,11 +39,15 @@ interface DashboardProps {
 }
 
 function formatBytes(bytes: number, decimals = 2) {
-    if (!+bytes) return '0 Bytes';
+    if (!+bytes) {
+return '0 Bytes';
+}
+
     const k = 1024;
     const dm = decimals < 0 ? 0 : decimals;
     const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
+
     return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
 }
 

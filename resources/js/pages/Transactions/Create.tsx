@@ -146,7 +146,9 @@ export default function Create({ outlets }: CreateProps) {
                                     ) {
                                         try {
                                             e.currentTarget.showPicker();
-                                        } catch (err) {}
+                                        } catch {
+                                            // showPicker may be blocked by browser policy
+                                        }
                                     }
                                 }}
                                 onFocus={(e) => {
@@ -156,7 +158,9 @@ export default function Create({ outlets }: CreateProps) {
                                     ) {
                                         try {
                                             e.currentTarget.showPicker();
-                                        } catch (err) {}
+                                        } catch {
+                                            // showPicker may be blocked by browser policy
+                                        }
                                     }
                                 }}
                                 aria-invalid={!!errors.date}

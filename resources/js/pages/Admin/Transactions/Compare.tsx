@@ -27,6 +27,7 @@ export default function Compare({ transaction, chairs }: CompareProps) {
     } = useForm({
         system_incomes: chairs.map(chair => {
             const existing = transaction.system_incomes?.find(si => si.chair?.name === chair.name);
+
             return {
                 chair_id: chair.id,
                 amount: existing ? String(Number(existing.amount)) : '0',
@@ -34,15 +35,17 @@ export default function Compare({ transaction, chairs }: CompareProps) {
         }),
     });
 
-    useEffect(() => {
+    
+    useEffect(() => {  
         setData('system_incomes', chairs.map(chair => {
             const existing = transaction.system_incomes?.find(si => si.chair?.name === chair.name);
+
             return {
                 chair_id: chair.id,
                 amount: existing ? String(Number(existing.amount)) : '0',
             };
         }));
-    }, [transaction.system_incomes, chairs]);
+    }, [transaction.system_incomes, chairs]); // eslint-disable-line react-hooks/exhaustive-deps
 
     const [confirmState, setConfirmState] = useState<{
         isOpen: boolean;
@@ -157,7 +160,9 @@ export default function Compare({ transaction, chairs }: CompareProps) {
             <ConfirmModal
                 isOpen={confirmState.isOpen}
                 onOpenChange={(open) => {
-                    if (!open) setConfirmState(prev => ({ ...prev, isOpen: false }));
+                    if (!open) {
+setConfirmState(prev => ({ ...prev, isOpen: false }));
+}
                 }}
                 onConfirm={() => {
                     setConfirmState(prev => ({ ...prev, isOpen: false }));

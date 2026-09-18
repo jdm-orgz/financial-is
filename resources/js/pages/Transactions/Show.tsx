@@ -1,14 +1,12 @@
 import { Head, Link, useForm, router } from '@inertiajs/react';
 import { ChevronLeft, Plus, Trash2, Upload, Send, PlayCircle, Image as ImageIcon, Pencil, X } from 'lucide-react';
+import { Check, ChevronsUpDown } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { ConfirmModal } from '@/components/confirm-modal';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { ConfirmModal } from '@/components/confirm-modal';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
-import { Check, ChevronsUpDown } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import {
     Dialog,
     DialogContent,
@@ -19,13 +17,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
     Table,
     TableBody,
@@ -34,6 +26,7 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import { cn } from '@/lib/utils';
 import type { Transaction } from '@/types/transaction';
 
 interface Chair {
@@ -84,15 +77,17 @@ export default function Show({ transaction, chairs }: ShowProps) {
         }),
     });
 
+     
     useEffect(() => {
         setDailyData('incomes', chairs.map(chair => {
             const existing = transaction.daily_incomes.find(di => di.chair?.name === chair.name);
+
             return {
                 chair_id: chair.id,
                 amount: existing ? String(Number(existing.amount)) : '0',
             };
         }));
-    }, [transaction.daily_incomes, chairs]);
+    }, [transaction.daily_incomes, chairs]); // eslint-disable-line react-hooks/exhaustive-deps
 
     // Realization Form
     const [isRealizationOpen, setIsRealizationOpen] = useState(false);
@@ -182,7 +177,9 @@ export default function Show({ transaction, chairs }: ShowProps) {
             hasError = true;
         }
 
-        if (hasError) return;
+        if (hasError) {
+return;
+}
 
         const url = editingRealizationId 
             ? `/transactions/${transaction.id}/replacement-realizations/${editingRealizationId}`
@@ -209,7 +206,10 @@ export default function Show({ transaction, chairs }: ShowProps) {
     };
 
     const handleDeleteProof = (type: 'image' | 'video') => {
-        if (!editingRealizationId) return;
+        if (!editingRealizationId) {
+return;
+}
+
         openConfirm(
             `Delete ${type} Proof`,
             `Are you sure you want to delete the existing ${type} proof?`,
@@ -218,8 +218,13 @@ export default function Show({ transaction, chairs }: ShowProps) {
             () => {
                 router.delete(`/transactions/${transaction.id}/replacement-realizations/${editingRealizationId}/proof/${type}`, {
                     onSuccess: () => {
-                        if (type === 'image') setExistingProofImage(null);
-                        if (type === 'video') setExistingProofVideo(null);
+                        if (type === 'image') {
+setExistingProofImage(null);
+}
+
+                        if (type === 'video') {
+setExistingProofVideo(null);
+}
                     },
                     preserveScroll: true
                 });
@@ -648,11 +653,15 @@ export default function Show({ transaction, chairs }: ShowProps) {
                                         <Command>
                                             <CommandList>
                                                 <CommandGroup>
-                                                    <CommandItem value="cash" onSelect={() => { setRealData('payment_method', 'cash'); setOpenMethodDropdown(false); }}>
+                                                    <CommandItem value="cash" onSelect={() => {
+ setRealData('payment_method', 'cash'); setOpenMethodDropdown(false); 
+}}>
                                                         <Check className={cn('mr-2 h-4 w-4 flex-shrink-0', realData.payment_method === 'cash' ? 'opacity-100' : 'opacity-0')} />
                                                         CASH
                                                     </CommandItem>
-                                                    <CommandItem value="qris" onSelect={() => { setRealData('payment_method', 'qris'); setOpenMethodDropdown(false); }}>
+                                                    <CommandItem value="qris" onSelect={() => {
+ setRealData('payment_method', 'qris'); setOpenMethodDropdown(false); 
+}}>
                                                         <Check className={cn('mr-2 h-4 w-4 flex-shrink-0', realData.payment_method === 'qris' ? 'opacity-100' : 'opacity-0')} />
                                                         QRIS
                                                     </CommandItem>
@@ -674,9 +683,11 @@ export default function Show({ transaction, chairs }: ShowProps) {
                                     className={cn(errorsReal.amount && 'border-destructive ring-destructive/20 focus-visible:ring-destructive/20')}
                                     onChange={(e) => {
                                         let val = e.target.value;
+
                                         if (val !== '') {
                                             val = String(Number(val));
                                         }
+
                                         setRealData('amount', val);
                                     }} 
                                     onBlur={() => {
@@ -790,7 +801,9 @@ export default function Show({ transaction, chairs }: ShowProps) {
             <ConfirmModal
                 isOpen={confirmState.isOpen}
                 onOpenChange={(open) => {
-                    if (!open) setConfirmState(prev => ({ ...prev, isOpen: false }));
+                    if (!open) {
+setConfirmState(prev => ({ ...prev, isOpen: false }));
+}
                 }}
                 onConfirm={() => {
                     setConfirmState(prev => ({ ...prev, isOpen: false }));
